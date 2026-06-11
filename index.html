@@ -226,23 +226,24 @@ const GRUPOS = {
 };
 
 async function fetchTodayGames() {
-  // Data de hoje em BRT como string MMDD para comparar com o ID dos jogos
   const now = new Date();
   const brt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
   const y = brt.getFullYear();
-  const m = String(brt.getMonth() + 1).padStart(2, '0');
-  const d = String(brt.getDate()).padStart(2, '0');
-  const dateKey = `${m}${d}`; // ex: 0611 — formato usado nos IDs da tabela jogos
+  const mo = String(brt.getMonth() + 1).padStart(2, '0');
+  const dy = String(brt.getDate()).padStart(2, '0');
+  const dateKey = `${mo}${dy}`; // ex: 0611
 
-  // Busca todos os jogos cujo ID termina com a data de hoje
-  const { data, error } = await sb.from('jogos').select('*')
-    .ilike('id', `%-${dateKey}`)
-    .order('kickoff_utc', { ascending: true });
-  if (error) { console.error(error); return []; }
-  if (data && data.length) return data;
+  try {
+    const { data, error } = await sb.from('jogos').select('*').order('kickoff_utc', { ascending: true });
+    if (error) throw error;
+    const filtered = (data || []).filter(g => g.id.endsWith(dateKey));
+    if (filtered.length) return filtered;
+  } catch(e) {
+    console.error('Erro Supabase:', e);
+  }
 
   // Fases eliminatórias: busca via Edge Function
-  const dateStr = `${y}-${m}-${d}`;
+  const dateStr = `${y}-${mo}-${dy}`;
   try {
     const resp = await fetch(`${PROXY}?endpoint=matches&date=${dateStr}`, {
       headers: { 'apikey': SUPABASE_KEY }
@@ -264,7 +265,7 @@ async function fetchTodayGames() {
       };
     });
   } catch(e) {
-    console.error('Erro ao buscar jogos via API:', e);
+    console.error('Erro API:', e);
     return [];
   }
 }
@@ -468,8 +469,13 @@ async function enterWithName() {
   localStorage.setItem('bolao_kebolets_nome', nome);
   document.getElementById('name-section').style.display = 'none';
   document.getElementById('loading-games').style.display = 'block';
-  todayGames = await fetchTodayGames();
-  await loadGuesses(nome);
+  try {
+    todayGames = await fetchTodayGames();
+    await loadGuesses(nome);
+  } catch(e) {
+    console.error('Erro ao carregar jogos:', e);
+    todayGames = [];
+  }
   const initials = nome.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   document.getElementById('user-initials').textContent = initials;
   document.getElementById('user-display').textContent = nome;
