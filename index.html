@@ -188,11 +188,69 @@ function initDateLabel() {
     new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo' });
 }
 
+function todayDateBRT() {
+  const now = new Date();
+  const brt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  const y = brt.getFullYear();
+  const m = String(brt.getMonth() + 1).padStart(2, '0');
+  const d = String(brt.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+const PROXY = 'https://yciqdafnvcxrxgkwltxy.supabase.co/functions/v1/football-proxy';
+
+// Mapa de TLA da API para emoji de bandeira
+const FLAGS = {
+  MEX:'🇲🇽',RSA:'🇿🇦',KOR:'🇰🇷',CZE:'🇨🇿',CAN:'🇨🇦',BIH:'🇧🇦',QAT:'🇶🇦',SUI:'🇨🇭',
+  BRA:'🇧🇷',MAR:'🇲🇦',HAI:'🇭🇹',SCO:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',USA:'🇺🇸',PAR:'🇵🇾',AUS:'🇦🇺',TUR:'🇹🇷',
+  GER:'🇩🇪',CIV:'🇨🇮',ECU:'🇪🇨',CUW:'🇨🇼',NED:'🇳🇱',JPN:'🇯🇵',SWE:'🇸🇪',TUN:'🇹🇳',
+  BEL:'🇧🇪',EGY:'🇪🇬',IRN:'🇮🇷',NZL:'🇳🇿',ESP:'🇪🇸',CPV:'🇨🇻',KSA:'🇸🇦',URU:'🇺🇾',
+  FRA:'🇫🇷',SEN:'🇸🇳',IRQ:'🇮🇶',NOR:'🇳🇴',ARG:'🇦🇷',ALG:'🇩🇿',AUT:'🇦🇹',JOR:'🇯🇴',
+  POR:'🇵🇹',COD:'🇨🇩',UZB:'🇺🇿',COL:'🇨🇴',ENG:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',CRO:'🇭🇷',GHA:'🇬🇭',PAN:'🇵🇦',
+  SRB:'🇷🇸',POL:'🇵🇱',MLI:'🇲🇱',VEN:'🇻🇪',
+};
+
+const GRUPOS = {
+  MEX:'Grupo A',RSA:'Grupo A',KOR:'Grupo A',CZE:'Grupo A',
+  CAN:'Grupo B',BIH:'Grupo B',QAT:'Grupo B',SUI:'Grupo B',
+  BRA:'Grupo C',MAR:'Grupo C',HAI:'Grupo C',SCO:'Grupo C',
+  USA:'Grupo D',PAR:'Grupo D',AUS:'Grupo D',TUR:'Grupo D',
+  GER:'Grupo E',CIV:'Grupo E',ECU:'Grupo E',CUW:'Grupo E',
+  NED:'Grupo F',JPN:'Grupo F',SWE:'Grupo F',TUN:'Grupo F',
+  BEL:'Grupo G',EGY:'Grupo G',IRN:'Grupo G',NZL:'Grupo G',
+  ESP:'Grupo H',CPV:'Grupo H',KSA:'Grupo H',URU:'Grupo H',
+  FRA:'Grupo I',SEN:'Grupo I',IRQ:'Grupo I',NOR:'Grupo I',
+  ARG:'Grupo J',ALG:'Grupo J',AUT:'Grupo J',JOR:'Grupo J',
+  POR:'Grupo K',COD:'Grupo K',UZB:'Grupo K',COL:'Grupo K',
+  ENG:'Grupo L',CRO:'Grupo L',GHA:'Grupo L',PAN:'Grupo L',
+};
+
 async function fetchTodayGames() {
-  const { start, end } = todayRangeBRT();
-  const { data, error } = await sb.from('jogos').select('*').gte('kickoff_utc', start).lt('kickoff_utc', end).order('kickoff_utc', { ascending: true });
-  if (error) { console.error(error); return []; }
-  return data || [];
+  try {
+    const date = todayDateBRT();
+    const resp = await fetch(`${PROXY}?endpoint=matches&date=${date}`, {
+      headers: { 'apikey': SUPABASE_KEY }
+    });
+    if (!resp.ok) return [];
+    const json = await resp.json();
+    return (json.matches || []).map(m => {
+      const tla_h = m.homeTeam.tla || '';
+      const tla_a = m.awayTeam.tla || '';
+      const dateStr = m.utcDate.slice(0, 10).replace(/-/g, '');
+      return {
+        id: `${tla_h.toLowerCase()}-${tla_a.toLowerCase()}-${dateStr}`,
+        grupo: GRUPOS[tla_h] || m.group || 'Copa 2026',
+        home_name: m.homeTeam.shortName || m.homeTeam.name,
+        home_flag: FLAGS[tla_h] || '🏳️',
+        away_name: m.awayTeam.shortName || m.awayTeam.name,
+        away_flag: FLAGS[tla_a] || '🏳️',
+        kickoff_utc: m.utcDate,
+      };
+    });
+  } catch(e) {
+    console.error('Erro ao buscar jogos:', e);
+    return [];
+  }
 }
 
 async function loadGuesses(nome) {
@@ -214,22 +272,19 @@ function calcPoints(palpite, resultado) {
   return 0;
 }
 
-// Busca resultados finalizados da Copa via football-data.org
 async function fetchResultados() {
   try {
-    const resp = await fetch('https://api.football-data.org/v4/competitions/WC/matches?status=FINISHED', {
-      headers: { 'X-Auth-Token': FDORG_TOKEN }
+    const resp = await fetch(`${PROXY}?endpoint=matches&status=FINISHED`, {
+      headers: { 'apikey': SUPABASE_KEY }
     });
     if (!resp.ok) return {};
     const json = await resp.json();
     const map = {};
     for (const m of (json.matches || [])) {
-      // Monta ID no mesmo formato que usamos: times + data
-      const date = m.utcDate.slice(0, 10).replace(/-/g, '');
+      const dateStr = m.utcDate.slice(0, 10).replace(/-/g, '');
       const home = m.homeTeam.tla?.toLowerCase() || '';
       const away = m.awayTeam.tla?.toLowerCase() || '';
-      const id = `${home}-${away}-${date}`;
-      map[id] = {
+      map[`${home}-${away}-${dateStr}`] = {
         home_score: m.score.fullTime.home,
         away_score: m.score.fullTime.away
       };
