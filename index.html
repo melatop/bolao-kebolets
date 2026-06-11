@@ -274,7 +274,9 @@ async function renderRanking() {
     }
   }
 
+  const OCULTOS = ['test'];
   const ranking = Object.keys(pontos)
+    .filter(n => !OCULTOS.includes(n.toLowerCase().trim()))
     .map(n => ({ nome: n, pts: pontos[n], acertos: acertos[n], cravados: cravados[n] }))
     .sort((a, b) => b.pts - a.pts || b.cravados - a.cravados || b.acertos - a.acertos);
 
