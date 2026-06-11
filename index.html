@@ -44,7 +44,8 @@
   .match-group { font-size: 11px; background: var(--green-light); color: var(--green); font-weight: 600; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
   .match-body { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
   .team { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-  .team-flag { font-size: 32px; line-height: 1; }
+  .team-flag { width: 40px; height: 40px; display: block; }
+  .team-flag img { width: 40px; height: 40px; }
   .team-name { font-size: 13px; font-weight: 600; color: var(--gray-700); text-align: center; line-height: 1.2; }
   .score-inputs { display: flex; align-items: center; gap: 6px; }
   .score-input { width: 44px; height: 44px; text-align: center; font-size: 20px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; border: 2px solid var(--gray-200); border-radius: var(--radius-sm); background: var(--gray-50); color: var(--gray-900); outline: none; transition: border-color 0.15s; -moz-appearance: textfield; }
@@ -65,7 +66,7 @@
   #loading-games { text-align: center; padding: 2rem; color: var(--gray-400); font-size: 14px; }
   #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--gray-900); color: var(--white); padding: 10px 22px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 999; white-space: nowrap; }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  @media (max-width: 400px) { .team-flag { font-size: 26px; } .score-input { width: 38px; height: 38px; font-size: 18px; } }
+  @media (max-width: 400px) { .team-flag { width: 32px; height: 32px; } .team-flag img { width: 32px; height: 32px; } .score-input { width: 38px; height: 38px; font-size: 18px; } }
 </style>
 </head>
 <body>
@@ -100,6 +101,7 @@
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
 <script>
 const SUPABASE_URL = 'https://yciqdafnvcxrxgkwltxy.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_sGccPD_mS9-InXnBqLSyXA_9r-FZu9s';
@@ -183,15 +185,17 @@ function renderGames() {
   for (const g of todayGames) {
     const locked = isLocked(g);
     const saved = savedGuesses[g.id];
-    const disabled = locked || !!saved;
-    const hVal = saved ? saved.home_score : '';
-    const aVal = saved ? saved.away_score : '';
+    const disabled = locked;
+    const hVal = saved ? saved.home_score : '0';
+    const aVal = saved ? saved.away_score : '0';
     const timeLabel = formatKickoffBRT(g.kickoff_utc);
 
     let badge = '';
-    if (saved) badge = `<span class="badge badge-saved">✓ Palpite salvo</span>`;
-    else if (locked) badge = `<span class="badge badge-locked">🔒 Encerrado</span>`;
+    if (locked) badge = `<span class="badge badge-locked">🔒 Encerrado</span>`;
+    else if (saved) badge = `<span class="badge badge-saved">✓ Palpite salvo</span>`;
     else badge = `<span class="badge badge-open">Aberto</span>`;
+
+    const btnLabel = saved ? 'Atualizar palpite' : 'Salvar palpite';
 
     html += `
       <div class="match-card">
@@ -206,10 +210,10 @@ function renderGames() {
           </div>
           <div class="score-inputs">
             <input class="score-input" type="number" min="0" max="20" step="1"
-              id="h-${g.id}" value="${hVal}" placeholder="0" ${disabled ? 'disabled' : ''}>
+              id="h-${g.id}" value="${hVal}" ${disabled ? 'disabled' : ''}>
             <span class="score-sep">×</span>
             <input class="score-input" type="number" min="0" max="20" step="1"
-              id="a-${g.id}" value="${aVal}" placeholder="0" ${disabled ? 'disabled' : ''}>
+              id="a-${g.id}" value="${aVal}" ${disabled ? 'disabled' : ''}>
           </div>
           <div class="team">
             <span class="team-flag">${g.away_flag}</span>
@@ -218,12 +222,13 @@ function renderGames() {
         </div>
         <div class="match-footer">
           ${badge}
-          ${!disabled ? `<button class="btn-save" onclick="salvarPalpite('${g.id}')">Salvar palpite</button>` : '<div></div>'}
+          ${!disabled ? `<button class="btn-save" onclick="salvarPalpite('${g.id}')">${btnLabel}</button>` : '<div></div>'}
         </div>
       </div>`;
   }
   section.innerHTML = html;
   section.style.display = 'block';
+  twemoji.parse(section, { folder: 'svg', ext: '.svg' });
 }
 
 async function enterWithName() {
@@ -247,14 +252,16 @@ async function enterWithName() {
 async function salvarPalpite(gameId) {
   const game = todayGames.find(g => g.id === gameId);
   if (isLocked(game)) { showToast('Partida já iniciou. Palpite encerrado.'); renderGames(); return; }
-  const h = document.getElementById('h-' + gameId).value.trim();
-  const a = document.getElementById('a-' + gameId).value.trim();
-  if (h === '' || a === '') { showToast('Preencha o placar dos dois times.'); return; }
+  const h = document.getElementById('h-' + gameId).value;
+  const a = document.getElementById('a-' + gameId).value;
   const hi = parseInt(h), ai = parseInt(a);
   if (isNaN(hi) || isNaN(ai) || hi < 0 || ai < 0) { showToast('Placar inválido.'); return; }
   const btn = document.querySelector(`[onclick="salvarPalpite('${gameId}')"]`);
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
-  const { error } = await sb.from('palpites').insert({ nome: currentUser, game_id: gameId, home_score: hi, away_score: ai });
+  const { error } = await sb.from('palpites').upsert(
+    { nome: currentUser, game_id: gameId, home_score: hi, away_score: ai },
+    { onConflict: 'nome,game_id' }
+  );
   if (error) {
     if (error.code === '23505') showToast('Você já enviou um palpite para esse jogo.');
     else { showToast('Erro ao salvar. Tente novamente.'); if (btn) { btn.disabled = false; btn.textContent = 'Salvar palpite'; } }
