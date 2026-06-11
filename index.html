@@ -64,7 +64,17 @@
   .empty-day { text-align: center; padding: 2.5rem 1rem; color: var(--gray-400); font-size: 14px; line-height: 1.7; background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); }
   .empty-day strong { display: block; font-size: 18px; color: var(--gray-700); margin-bottom: 6px; }
   #loading-games { text-align: center; padding: 2rem; color: var(--gray-400); font-size: 14px; }
-  #ranking-section { margin-top: 4px; }
+  #placares-section { margin-top: 4px; }
+  .placares-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); overflow: hidden; margin-top: 10px; }
+  .placar-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--gray-100); }
+  .placar-row:last-child { border-bottom: none; }
+  .placar-team { font-size: 13px; font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: 6px; }
+  .placar-team.away { flex-direction: row-reverse; text-align: right; }
+  .placar-flag { width: 20px; height: 20px; display: block; flex-shrink: 0; }
+  .placar-flag img { width: 20px; height: 20px; }
+  .placar-score { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; color: var(--gray-900); text-align: center; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
+  .placar-score.pending { color: var(--gray-400); font-size: 14px; font-weight: 500; }
+  .placar-time { font-size: 11px; color: var(--gray-400); text-align: center; }
   .ranking-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; margin-top: 1.25rem; }
   .ranking-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--gray-900); text-transform: uppercase; letter-spacing: 0.03em; }
   .ranking-sub { font-size: 12px; color: var(--gray-400); }
@@ -119,6 +129,9 @@
     <div id="loading-ranking" style="display:none;">Calculando ranking...</div>
     <div id="ranking-content"></div>
   </div>
+  <div id="placares-section" style="display:none;">
+    <div id="placares-content"></div>
+  </div>
 </main>
 <div id="toast"></div>
 
@@ -132,7 +145,8 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 let todayGames = [];
 let savedGuesses = {};
-let rankingVisible = false;
+let rankingVisible = true;
+let placaresVisible = true;
 
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -305,14 +319,78 @@ function renderGames() {
   }
 
   const temAbertos = todayGames.some(g => !isLocked(g));
-  if (temAbertos) section.innerHTML += `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;" onclick="salvarTodos()">Salvar</button>`;
-  section.innerHTML += `<button class="btn-ranking" id="btn-ranking" onclick="toggleRanking()">${rankingVisible ? '✕ Fechar ranking' : '🏆 Ver ranking'}</button>`;
+  if (temAbertos) section.innerHTML += `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;opacity:0.4;cursor:not-allowed;" disabled onclick="salvarTodos()">Salvar</button>`;
+  section.innerHTML += `<button class="btn-ranking" id="btn-ranking" onclick="toggleRanking()" style="margin-bottom:8px;">${rankingVisible ? '✕ Fechar ranking' : '🏆 Ver ranking'}</button>`;
+  section.innerHTML += `<button class="btn-ranking" id="btn-placares" onclick="togglePlacares()">${placaresVisible ? '✕ Fechar placares' : '📊 Ver placares do dia'}</button>`;
   if (rankingVisible) document.getElementById('ranking-section').style.display = 'block';
+  if (placaresVisible) { document.getElementById('placares-section').style.display = 'block'; renderPlacares(); }
 }
 
 function onEditPalpite(gameId) {
   const el = document.getElementById('saved-' + gameId);
   if (el) el.style.visibility = 'hidden';
+  const btn = document.getElementById('btn-salvar-todos');
+  if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+}
+
+async function togglePlacares() {
+  placaresVisible = !placaresVisible;
+  const btn = document.getElementById('btn-placares');
+  const ps = document.getElementById('placares-section');
+  if (placaresVisible) {
+    btn.textContent = '✕ Fechar placares';
+    btn.classList.add('active');
+    ps.style.display = 'block';
+    renderPlacares();
+  } else {
+    btn.textContent = '📊 Ver placares do dia';
+    btn.classList.remove('active');
+    ps.style.display = 'none';
+  }
+}
+
+async function renderPlacares() {
+  const resultados = await fetchResultados();
+  const contentEl = document.getElementById('placares-content');
+  if (!todayGames.length) { contentEl.innerHTML = ''; return; }
+
+  let html = `
+    <div class="ranking-header" style="margin-top:1.25rem;">
+      <span class="ranking-title">📊 Placares do dia</span>
+    </div>
+    <div class="placares-card">`;
+
+  for (const g of todayGames) {
+    const res = resultados[g.id];
+    const locked = isLocked(g);
+    let scoreHtml = '';
+    if (res) {
+      scoreHtml = `<div class="placar-score">${res.home_score} <span style="color:var(--gray-400);font-size:14px;">×</span> ${res.away_score}</div>`;
+    } else if (locked) {
+      scoreHtml = `<div class="placar-score pending">em andamento</div>`;
+    } else {
+      scoreHtml = `<div class="placar-score pending">${formatKickoffBRT(g.kickoff_utc)}</div>`;
+    }
+
+    html += `
+      <div class="placar-row">
+        <div class="placar-team">
+          <span class="placar-flag">${g.home_flag}</span>
+          ${g.home_name}
+        </div>
+        ${scoreHtml}
+        <div class="placar-team away">
+          <span class="placar-flag">${g.away_flag}</span>
+          ${g.away_name}
+        </div>
+      </div>`;
+  }
+
+  html += `</div>`;
+  contentEl.innerHTML = html;
+  contentEl.querySelectorAll('.placar-flag').forEach(el => {
+    twemoji.parse(el, { folder: 'svg', ext: '.svg' });
+  });
 }
 
 async function toggleRanking() {
@@ -349,6 +427,10 @@ async function enterWithName() {
   document.getElementById('user-bar').style.display = 'flex';
   document.getElementById('loading-games').style.display = 'none';
   renderGames();
+  document.getElementById('ranking-section').style.display = 'block';
+  document.getElementById('placares-section').style.display = 'block';
+  await renderRanking();
+  await renderPlacares();
 }
 
 async function salvarTodos() {
@@ -378,7 +460,8 @@ async function salvarTodos() {
 
 function sair() {
   currentUser = null;
-  rankingVisible = false;
+  rankingVisible = true;
+  placaresVisible = true;
   localStorage.removeItem('bolao_kebolets_nome');
   savedGuesses = {};
   todayGames = [];
@@ -386,6 +469,7 @@ function sair() {
   document.getElementById('games-section').style.display = 'none';
   document.getElementById('games-section').innerHTML = '';
   document.getElementById('ranking-section').style.display = 'none';
+  document.getElementById('placares-section').style.display = 'none';
   document.getElementById('name-section').style.display = 'block';
   document.getElementById('name-input').value = '';
 }
