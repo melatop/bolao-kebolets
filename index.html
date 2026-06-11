@@ -426,10 +426,7 @@ function renderGames() {
           ${locked
             ? `<div class="match-footer"><span class="badge badge-locked">🔒 Encerrado</span><div></div></div>`
             : `<div class="match-footer" style="justify-content:flex-end;">
-                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-                  <button class="btn-save" onclick="salvarPalpite('${g.id}')">Salvar</button>
-                  <span class="saved-confirm" id="saved-${g.id}" style="font-size:11px;color:var(--green);font-weight:600;visibility:${saved ? 'visible' : 'hidden'};">✓ Palpite salvo</span>
-                </div>
+                <span class="saved-confirm" id="saved-${g.id}" style="font-size:11px;color:var(--green);font-weight:600;visibility:${saved ? 'visible' : 'hidden'};">✓ Palpite salvo</span>
               </div>`
           }
         </div>`;
@@ -485,7 +482,7 @@ async function salvarTodos() {
   const btn = document.getElementById('btn-salvar-todos');
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
   const jogosAbertos = todayGames.filter(g => !isLocked(g));
-  if (!jogosAbertos.length) { showToast('Nenhum jogo aberto para salvar.'); return; }
+  if (!jogosAbertos.length) { showToast('Nenhum jogo aberto para salvar.'); if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; } return; }
   let salvos = 0;
   for (const g of jogosAbertos) {
     const h = document.getElementById('h-' + g.id)?.value;
@@ -496,11 +493,16 @@ async function salvarTodos() {
       { nome: currentUser, game_id: g.id, home_score: hi, away_score: ai },
       { onConflict: 'nome,game_id' }
     );
-    if (!error) salvos++;
+    if (!error) {
+      salvos++;
+      const confirmEl = document.getElementById('saved-' + g.id);
+      if (confirmEl) confirmEl.style.visibility = 'visible';
+    }
   }
   await loadGuesses(currentUser);
+  if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
   showToast(salvos === jogosAbertos.length ? 'Todos os palpites salvos! 🎯' : `${salvos} palpite(s) salvo(s).`);
-  renderGames();
+}
 }
 
 function onEditPalpite(gameId) {
