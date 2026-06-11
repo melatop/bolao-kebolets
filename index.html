@@ -392,9 +392,6 @@ function renderGames() {
       const hVal = saved ? saved.home_score : (prevH ? prevH.value : '0');
       const aVal = saved ? saved.away_score : (prevA ? prevA.value : '0');
       const timeLabel = formatKickoffBRT(g.kickoff_utc);
-      let badge = locked ? `<span class="badge badge-locked">🔒 Encerrado</span>`
-        : saved ? `<span class="badge badge-saved">✓ Palpite salvo</span>`
-        : `<span class="badge badge-open">Aberto</span>`;
       html += `
         <div class="match-card">
           <div class="match-meta">
@@ -404,16 +401,21 @@ function renderGames() {
           <div class="match-body">
             <div class="team"><span class="team-flag">${g.home_flag}</span><span class="team-name">${g.home_name}</span></div>
             <div class="score-inputs">
-              <input class="score-input" type="number" min="0" max="20" step="1" id="h-${g.id}" value="${hVal}" ${locked ? 'disabled' : ''}>
+              <input class="score-input" type="number" min="0" max="20" step="1" id="h-${g.id}" value="${hVal}" ${locked ? 'disabled' : ''} oninput="onEditPalpite('${g.id}')">
               <span class="score-sep">×</span>
-              <input class="score-input" type="number" min="0" max="20" step="1" id="a-${g.id}" value="${aVal}" ${locked ? 'disabled' : ''}>
+              <input class="score-input" type="number" min="0" max="20" step="1" id="a-${g.id}" value="${aVal}" ${locked ? 'disabled' : ''} oninput="onEditPalpite('${g.id}')">
             </div>
             <div class="team"><span class="team-flag">${g.away_flag}</span><span class="team-name">${g.away_name}</span></div>
           </div>
-          <div class="match-footer">
-            ${badge}
-            <div></div>
-          </div>
+          ${locked
+            ? `<div class="match-footer"><span class="badge badge-locked">🔒 Encerrado</span><div></div></div>`
+            : `<div class="match-footer" style="justify-content:flex-end;">
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                  <button class="btn-save" onclick="salvarPalpite('${g.id}')">Salvar</button>
+                  <span class="saved-confirm" id="saved-${g.id}" style="font-size:11px;color:var(--green);font-weight:600;visibility:${saved ? 'visible' : 'hidden'};">✓ Palpite salvo</span>
+                </div>
+              </div>`
+          }
         </div>`;
     }
     section.innerHTML = html;
@@ -424,7 +426,7 @@ function renderGames() {
   // Botão salvar todos + ranking
   const temAbertos = todayGames.some(g => !isLocked(g));
   section.innerHTML += temAbertos
-    ? `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;" onclick="salvarTodos()">Salvar todos os palpites</button>`
+    ? `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;" onclick="salvarTodos()">Salvar</button>`
     : '';
   section.innerHTML += `<button class="btn-ranking" id="btn-ranking" onclick="toggleRanking()">🏆 Ver ranking</button>`;
 }
@@ -485,6 +487,11 @@ async function salvarTodos() {
   renderGames();
 }
 
+function onEditPalpite(gameId) {
+  const el = document.getElementById('saved-' + gameId);
+  if (el) el.style.visibility = 'hidden';
+}
+
 async function salvarPalpite(gameId) {
   const game = todayGames.find(g => g.id === gameId);
   if (isLocked(game)) { showToast('Partida já iniciou. Palpite encerrado.'); renderGames(); return; }
@@ -500,12 +507,14 @@ async function salvarPalpite(gameId) {
   );
   if (error) {
     if (error.code === '23505') showToast('Você já enviou um palpite para esse jogo.');
-    else { showToast('Erro ao salvar. Tente novamente.'); if (btn) { btn.disabled = false; btn.textContent = 'Salvar palpite'; } }
+    else { showToast('Erro ao salvar. Tente novamente.'); }
+    if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
     return;
   }
   await loadGuesses(currentUser);
-  showToast('Palpite salvo! 🎯');
-  renderGames();
+  if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
+  const confirmEl = document.getElementById('saved-' + gameId);
+  if (confirmEl) confirmEl.style.visibility = 'visible';
 }
 
 function sair() {
