@@ -226,6 +226,12 @@ const GRUPOS = {
 };
 
 async function fetchTodayGames() {
+  const { start, end } = todayRangeBRT();
+  const { data, error } = await sb.from('jogos').select('*').gte('kickoff_utc', start).lt('kickoff_utc', end).order('kickoff_utc', { ascending: true });
+  if (error) { console.error(error); return []; }
+  // Se encontrou jogos na tabela, usa eles (fase de grupos)
+  if (data && data.length) return data;
+  // Senão, tenta buscar via Edge Function (fases eliminatórias)
   try {
     const date = todayDateBRT();
     const resp = await fetch(`${PROXY}?endpoint=matches&date=${date}`, {
@@ -239,7 +245,7 @@ async function fetchTodayGames() {
       const dateStr = m.utcDate.slice(0, 10).replace(/-/g, '');
       return {
         id: `${tla_h.toLowerCase()}-${tla_a.toLowerCase()}-${dateStr}`,
-        grupo: GRUPOS[tla_h] || m.group || 'Copa 2026',
+        grupo: GRUPOS[tla_h] || m.stage || 'Copa 2026',
         home_name: m.homeTeam.shortName || m.homeTeam.name,
         home_flag: FLAGS[tla_h] || '🏳️',
         away_name: m.awayTeam.shortName || m.awayTeam.name,
@@ -248,7 +254,7 @@ async function fetchTodayGames() {
       };
     });
   } catch(e) {
-    console.error('Erro ao buscar jogos:', e);
+    console.error('Erro ao buscar jogos via API:', e);
     return [];
   }
 }
