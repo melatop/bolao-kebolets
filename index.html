@@ -226,26 +226,9 @@ const GRUPOS = {
 };
 
 async function fetchTodayGames() {
-  const now = new Date();
-  const brt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-  const y = brt.getFullYear();
-  const mo = String(brt.getMonth() + 1).padStart(2, '0');
-  const dy = String(brt.getDate()).padStart(2, '0');
-  const dateKey = `${mo}${dy}`; // ex: 0611
-
   try {
-    const { data, error } = await sb.from('jogos').select('*').order('kickoff_utc', { ascending: true });
-    if (error) throw error;
-    const filtered = (data || []).filter(g => g.id.endsWith(dateKey));
-    if (filtered.length) return filtered;
-  } catch(e) {
-    console.error('Erro Supabase:', e);
-  }
-
-  // Fases eliminatórias: busca via Edge Function
-  const dateStr = `${y}-${mo}-${dy}`;
-  try {
-    const resp = await fetch(`${PROXY}?endpoint=matches&date=${dateStr}`, {
+    const date = todayDateBRT();
+    const resp = await fetch(`${PROXY}?endpoint=matches&date=${date}`, {
       headers: { 'apikey': SUPABASE_KEY }
     });
     if (!resp.ok) return [];
@@ -253,10 +236,10 @@ async function fetchTodayGames() {
     return (json.matches || []).map(m => {
       const tla_h = m.homeTeam.tla || '';
       const tla_a = m.awayTeam.tla || '';
-      const ds = m.utcDate.slice(0, 10).replace(/-/g, '');
+      const dateStr = m.utcDate.slice(0, 10).replace(/-/g, '');
       return {
-        id: `${tla_h.toLowerCase()}-${tla_a.toLowerCase()}-${ds}`,
-        grupo: GRUPOS[tla_h] || m.stage || 'Copa 2026',
+        id: `${tla_h.toLowerCase()}-${tla_a.toLowerCase()}-${dateStr}`,
+        grupo: GRUPOS[tla_h] || m.group || 'Copa 2026',
         home_name: m.homeTeam.shortName || m.homeTeam.name,
         home_flag: FLAGS[tla_h] || '🏳️',
         away_name: m.awayTeam.shortName || m.awayTeam.name,
@@ -265,7 +248,7 @@ async function fetchTodayGames() {
       };
     });
   } catch(e) {
-    console.error('Erro API:', e);
+    console.error('Erro ao buscar jogos:', e);
     return [];
   }
 }
@@ -427,7 +410,10 @@ function renderGames() {
           ${locked
             ? `<div class="match-footer"><span class="badge badge-locked">🔒 Encerrado</span><div></div></div>`
             : `<div class="match-footer" style="justify-content:flex-end;">
-                <span class="saved-confirm" id="saved-${g.id}" style="font-size:11px;color:var(--green);font-weight:600;visibility:${saved ? 'visible' : 'hidden'};">✓ Palpite salvo</span>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                  <button class="btn-save" onclick="salvarPalpite('${g.id}')">Salvar</button>
+                  <span class="saved-confirm" id="saved-${g.id}" style="font-size:11px;color:var(--green);font-weight:600;visibility:${saved ? 'visible' : 'hidden'};">✓ Palpite salvo</span>
+                </div>
               </div>`
           }
         </div>`;
@@ -469,13 +455,8 @@ async function enterWithName() {
   localStorage.setItem('bolao_kebolets_nome', nome);
   document.getElementById('name-section').style.display = 'none';
   document.getElementById('loading-games').style.display = 'block';
-  try {
-    todayGames = await fetchTodayGames();
-    await loadGuesses(nome);
-  } catch(e) {
-    console.error('Erro ao carregar jogos:', e);
-    todayGames = [];
-  }
+  todayGames = await fetchTodayGames();
+  await loadGuesses(nome);
   const initials = nome.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   document.getElementById('user-initials').textContent = initials;
   document.getElementById('user-display').textContent = nome;
@@ -488,7 +469,7 @@ async function salvarTodos() {
   const btn = document.getElementById('btn-salvar-todos');
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
   const jogosAbertos = todayGames.filter(g => !isLocked(g));
-  if (!jogosAbertos.length) { showToast('Nenhum jogo aberto para salvar.'); if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; } return; }
+  if (!jogosAbertos.length) { showToast('Nenhum jogo aberto para salvar.'); return; }
   let salvos = 0;
   for (const g of jogosAbertos) {
     const h = document.getElementById('h-' + g.id)?.value;
@@ -499,16 +480,11 @@ async function salvarTodos() {
       { nome: currentUser, game_id: g.id, home_score: hi, away_score: ai },
       { onConflict: 'nome,game_id' }
     );
-    if (!error) {
-      salvos++;
-      const confirmEl = document.getElementById('saved-' + g.id);
-      if (confirmEl) confirmEl.style.visibility = 'visible';
-    }
+    if (!error) salvos++;
   }
   await loadGuesses(currentUser);
-  if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
   showToast(salvos === jogosAbertos.length ? 'Todos os palpites salvos! 🎯' : `${salvos} palpite(s) salvo(s).`);
-}
+  renderGames();
 }
 
 function onEditPalpite(gameId) {
