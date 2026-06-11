@@ -298,7 +298,10 @@ function renderGames() {
     }
     section.innerHTML = html;
     section.style.display = 'block';
-    twemoji.parse(section, { folder: 'svg', ext: '.svg' });
+    // Aplica twemoji apenas nas bandeiras, não no texto do footer
+    section.querySelectorAll('.team-flag').forEach(el => {
+      twemoji.parse(el, { folder: 'svg', ext: '.svg' });
+    });
   }
 
   const temAbertos = todayGames.some(g => !isLocked(g));
