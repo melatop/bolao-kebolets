@@ -125,12 +125,12 @@
   </div>
   <div id="loading-games" style="display:none;">Carregando jogos...</div>
   <div id="games-section" style="display:none;"></div>
+  <div id="placares-section" style="display:none;">
+    <div id="placares-content"></div>
+  </div>
   <div id="ranking-section" style="display:none;">
     <div id="loading-ranking" style="display:none;">Calculando ranking...</div>
     <div id="ranking-content"></div>
-  </div>
-  <div id="placares-section" style="display:none;">
-    <div id="placares-content"></div>
   </div>
 </main>
 <div id="toast"></div>
@@ -320,8 +320,8 @@ function renderGames() {
 
   const temAbertos = todayGames.some(g => !isLocked(g));
   if (temAbertos) section.innerHTML += `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;opacity:0.4;cursor:not-allowed;" disabled onclick="salvarTodos()">Salvar</button>`;
-  section.innerHTML += `<button class="btn-ranking" id="btn-ranking" onclick="toggleRanking()" style="margin-bottom:8px;">${rankingVisible ? '✕ Fechar ranking' : '🏆 Ver ranking'}</button>`;
-  section.innerHTML += `<button class="btn-ranking" id="btn-placares" onclick="togglePlacares()">${placaresVisible ? '✕ Fechar placares' : '📊 Ver placares do dia'}</button>`;
+  section.innerHTML += `<button class="btn-ranking" id="btn-placares" onclick="togglePlacares()" style="margin-bottom:8px;">${placaresVisible ? '✕ Fechar placares' : '📊 Ver placares do dia'}</button>`;
+  section.innerHTML += `<button class="btn-ranking" id="btn-ranking" onclick="toggleRanking()">${rankingVisible ? '✕ Fechar ranking' : '🏆 Ver ranking'}</button>`;
   if (rankingVisible) document.getElementById('ranking-section').style.display = 'block';
   if (placaresVisible) { document.getElementById('placares-section').style.display = 'block'; renderPlacares(); }
 }
