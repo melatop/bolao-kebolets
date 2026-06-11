@@ -232,7 +232,7 @@ async function fetchTodayGames() {
   const y = brt.getFullYear();
   const m = String(brt.getMonth() + 1).padStart(2, '0');
   const d = String(brt.getDate()).padStart(2, '0');
-  const dateKey = `${y}${m}${d}`; // ex: 20260611
+  const dateKey = `${m}${d}`; // ex: 0611 — formato usado nos IDs da tabela jogos
 
   // Busca todos os jogos cujo ID termina com a data de hoje
   const { data, error } = await sb.from('jogos').select('*')
