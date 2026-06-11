@@ -340,7 +340,6 @@ function renderGames() {
       let badge = locked ? `<span class="badge badge-locked">🔒 Encerrado</span>`
         : saved ? `<span class="badge badge-saved">✓ Palpite salvo</span>`
         : `<span class="badge badge-open">Aberto</span>`;
-      const btnLabel = saved ? 'Atualizar palpite' : 'Salvar palpite';
       html += `
         <div class="match-card">
           <div class="match-meta">
@@ -358,7 +357,7 @@ function renderGames() {
           </div>
           <div class="match-footer">
             ${badge}
-            ${!locked ? `<button class="btn-save" onclick="salvarPalpite('${g.id}')">${btnLabel}</button>` : '<div></div>'}
+            <div></div>
           </div>
         </div>`;
     }
@@ -367,7 +366,11 @@ function renderGames() {
     twemoji.parse(section, { folder: 'svg', ext: '.svg' });
   }
 
-  // Botão ranking
+  // Botão salvar todos + ranking
+  const temAbertos = todayGames.some(g => !isLocked(g));
+  section.innerHTML += temAbertos
+    ? `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;" onclick="salvarTodos()">Salvar todos os palpites</button>`
+    : '';
   section.innerHTML += `<button class="btn-ranking" id="btn-ranking" onclick="toggleRanking()">🏆 Ver ranking</button>`;
 }
 
@@ -402,6 +405,28 @@ async function enterWithName() {
   document.getElementById('user-display').textContent = nome;
   document.getElementById('user-bar').style.display = 'flex';
   document.getElementById('loading-games').style.display = 'none';
+  renderGames();
+}
+
+async function salvarTodos() {
+  const btn = document.getElementById('btn-salvar-todos');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+  const jogosAbertos = todayGames.filter(g => !isLocked(g));
+  if (!jogosAbertos.length) { showToast('Nenhum jogo aberto para salvar.'); return; }
+  let salvos = 0;
+  for (const g of jogosAbertos) {
+    const h = document.getElementById('h-' + g.id)?.value;
+    const a = document.getElementById('a-' + g.id)?.value;
+    const hi = parseInt(h), ai = parseInt(a);
+    if (isNaN(hi) || isNaN(ai) || hi < 0 || ai < 0) continue;
+    const { error } = await sb.from('palpites').upsert(
+      { nome: currentUser, game_id: g.id, home_score: hi, away_score: ai },
+      { onConflict: 'nome,game_id' }
+    );
+    if (!error) salvos++;
+  }
+  await loadGuesses(currentUser);
+  showToast(salvos === jogosAbertos.length ? 'Todos os palpites salvos! 🎯' : `${salvos} palpite(s) salvo(s).`);
   renderGames();
 }
 
