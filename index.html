@@ -24,6 +24,8 @@
   .pts-pill { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 500; }
   .pts-pill strong { color: var(--gold); }
   main { max-width: 560px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+  /* login */
   #name-section { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 1.5rem; margin-bottom: 1.5rem; text-align: center; }
   #name-section h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; color: var(--green); text-transform: uppercase; margin-bottom: 6px; }
   #name-section p { font-size: 14px; color: var(--gray-400); margin-bottom: 1rem; }
@@ -32,11 +34,15 @@
   .name-row input:focus { border-color: var(--green); }
   .btn-enter { background: var(--green); color: var(--white); border: none; border-radius: var(--radius-sm); padding: 9px 20px; font-size: 14px; font-weight: 600; font-family: 'Barlow', sans-serif; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
   .btn-enter:hover { background: var(--green-dark); }
+
+  /* user bar */
   #user-bar { display: none; align-items: center; gap: 10px; background: var(--white); border-radius: var(--radius-sm); border: 1px solid var(--gray-200); padding: 8px 14px; margin-bottom: 1.25rem; }
   .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--green); color: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; flex-shrink: 0; }
   #user-bar .uname { font-size: 14px; font-weight: 600; flex: 1; color: var(--gray-900); }
   .btn-sair { font-size: 12px; color: var(--gray-400); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; font-family: 'Barlow', sans-serif; }
   .btn-sair:hover { background: var(--gray-100); color: var(--gray-700); }
+
+  /* jogos */
   .day-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-400); margin-bottom: 10px; }
   .match-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 1rem 1.25rem; margin-bottom: 12px; }
   .match-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -64,6 +70,36 @@
   .empty-day { text-align: center; padding: 2.5rem 1rem; color: var(--gray-400); font-size: 14px; line-height: 1.7; background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); }
   .empty-day strong { display: block; font-size: 18px; color: var(--gray-700); margin-bottom: 6px; }
   #loading-games { text-align: center; padding: 2rem; color: var(--gray-400); font-size: 14px; }
+
+  /* botão ranking */
+  .btn-ranking { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: var(--white); color: var(--green); border: 1.5px solid var(--green); border-radius: var(--radius-sm); padding: 11px 20px; font-size: 14px; font-weight: 600; font-family: 'Barlow', sans-serif; cursor: pointer; transition: all 0.15s; margin-top: 8px; }
+  .btn-ranking:hover { background: var(--green-light); }
+  .btn-ranking.active { background: var(--green); color: var(--white); }
+
+  /* ranking */
+  #ranking-section { margin-top: 4px; }
+  .ranking-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; margin-top: 1.25rem; }
+  .ranking-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--gray-900); text-transform: uppercase; letter-spacing: 0.03em; }
+  .ranking-sub { font-size: 12px; color: var(--gray-400); }
+  .ranking-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); overflow: hidden; }
+  .ranking-row { display: grid; grid-template-columns: 32px 1fr 48px 48px 48px; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--gray-100); }
+  .ranking-row:last-child { border-bottom: none; }
+  .ranking-row.me { background: var(--green-light); }
+  .ranking-row.top1 { background: #fffbea; }
+  .pos { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; color: var(--gray-400); text-align: center; }
+  .pos.gold { color: #c89b00; }
+  .pos.silver { color: #888; }
+  .pos.bronze { color: #a0612a; }
+  .rk-name { font-size: 14px; font-weight: 600; color: var(--gray-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rk-name.me-label::after { content: ' (você)'; font-weight: 400; color: var(--gray-400); font-size: 12px; }
+  .rk-col { text-align: center; font-size: 13px; }
+  .rk-col-label { font-size: 10px; color: var(--gray-400); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .rk-pts { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--green); }
+  .ranking-legend { display: grid; grid-template-columns: 32px 1fr 48px 48px 48px; gap: 8px; padding: 6px 16px 8px; border-bottom: 1px solid var(--gray-200); }
+  .ranking-empty { text-align: center; padding: 2rem; color: var(--gray-400); font-size: 14px; }
+  #loading-ranking { text-align: center; padding: 1.5rem; color: var(--gray-400); font-size: 14px; }
+
+  /* toast */
   #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--gray-900); color: var(--white); padding: 10px 22px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 999; white-space: nowrap; }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   @media (max-width: 400px) { .team-flag { width: 32px; height: 32px; } .team-flag img { width: 32px; height: 32px; } .score-input { width: 38px; height: 38px; font-size: 18px; } }
@@ -97,6 +133,10 @@
   </div>
   <div id="loading-games" style="display:none;">Carregando jogos...</div>
   <div id="games-section" style="display:none;"></div>
+  <div id="ranking-section" style="display:none;">
+    <div id="loading-ranking" style="display:none;">Calculando ranking...</div>
+    <div id="ranking-content"></div>
+  </div>
 </main>
 <div id="toast"></div>
 
@@ -104,12 +144,14 @@
 <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
 <script>
 const SUPABASE_URL = 'https://yciqdafnvcxrxgkwltxy.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_sGccPD_mS9-InXnBqLSyXA_9r-FZu9s';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljaXFkYWZudmN4cnhna3dsdHh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODI4MjIsImV4cCI6MjA5Njc1ODgyMn0.cZtvIIuPYMteHrqHjRlzLw9dU8bUeVr4LCOVvhVTxqw';
+const FDORG_TOKEN = '5ef3e39c67914f82b1f6176d31df2581';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser = null;
 let todayGames = [];
 let savedGuesses = {};
+let rankingVisible = false;
 
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -123,42 +165,32 @@ function isLocked(game) {
 }
 
 function todayRangeBRT() {
-  // Retorna inicio e fim do dia de hoje em BRT (UTC-3) como strings UTC
   const now = new Date();
-  const brtOffset = -3 * 60; // minutos
-  const localOffset = now.getTimezoneOffset(); // minutos
+  const brtOffset = -3 * 60;
+  const localOffset = now.getTimezoneOffset();
   const diff = (localOffset + brtOffset) * 60 * 1000;
   const brtNow = new Date(now.getTime() + diff);
   const y = brtNow.getUTCFullYear();
   const m = String(brtNow.getUTCMonth() + 1).padStart(2, '0');
   const d = String(brtNow.getUTCDate()).padStart(2, '0');
-  // Dia de hoje BRT: começa às 03:00 UTC e termina às 02:59:59 UTC do dia seguinte
   const start = `${y}-${m}-${d}T03:00:00Z`;
   const nextDay = new Date(`${y}-${m}-${d}T03:00:00Z`);
   nextDay.setUTCDate(nextDay.getUTCDate() + 1);
-  const end = nextDay.toISOString();
-  return { start, end };
+  return { start, end: nextDay.toISOString() };
 }
 
 function formatKickoffBRT(utcString) {
-  const d = new Date(utcString);
-  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) + ' (Brasília)';
+  return new Date(utcString).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) + ' (Brasília)';
 }
 
 function initDateLabel() {
-  const d = new Date();
   document.getElementById('date-label').textContent =
-    d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo' });
+    new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo' });
 }
 
 async function fetchTodayGames() {
   const { start, end } = todayRangeBRT();
-  const { data, error } = await sb
-    .from('jogos')
-    .select('*')
-    .gte('kickoff_utc', start)
-    .lt('kickoff_utc', end)
-    .order('kickoff_utc', { ascending: true });
+  const { data, error } = await sb.from('jogos').select('*').gte('kickoff_utc', start).lt('kickoff_utc', end).order('kickoff_utc', { ascending: true });
   if (error) { console.error(error); return []; }
   return data || [];
 }
@@ -171,6 +203,121 @@ async function loadGuesses(nome) {
   if (data) data.forEach(r => { savedGuesses[r.game_id] = r; });
 }
 
+function calcPoints(palpite, resultado) {
+  if (!resultado) return null; // jogo sem resultado ainda
+  const { home_score: ph, away_score: pa } = palpite;
+  const { home_score: rh, away_score: ra } = resultado;
+  if (ph === rh && pa === ra) return 3;
+  const pRes = ph > pa ? 'H' : ph < pa ? 'A' : 'D';
+  const rRes = rh > ra ? 'H' : rh < ra ? 'A' : 'D';
+  if (pRes === rRes) return 1;
+  return 0;
+}
+
+// Busca resultados finalizados da Copa via football-data.org
+async function fetchResultados() {
+  try {
+    const resp = await fetch('https://api.football-data.org/v4/competitions/WC/matches?status=FINISHED', {
+      headers: { 'X-Auth-Token': FDORG_TOKEN }
+    });
+    if (!resp.ok) return {};
+    const json = await resp.json();
+    const map = {};
+    for (const m of (json.matches || [])) {
+      // Monta ID no mesmo formato que usamos: times + data
+      const date = m.utcDate.slice(0, 10).replace(/-/g, '');
+      const home = m.homeTeam.tla?.toLowerCase() || '';
+      const away = m.awayTeam.tla?.toLowerCase() || '';
+      const id = `${home}-${away}-${date}`;
+      map[id] = {
+        home_score: m.score.fullTime.home,
+        away_score: m.score.fullTime.away
+      };
+    }
+    return map;
+  } catch(e) {
+    console.error('Erro ao buscar resultados:', e);
+    return {};
+  }
+}
+
+async function renderRanking() {
+  const loadEl = document.getElementById('loading-ranking');
+  const contentEl = document.getElementById('ranking-content');
+  loadEl.style.display = 'block';
+  contentEl.innerHTML = '';
+
+  // Busca todos os palpites
+  const { data: todos, error } = await sb.from('palpites').select('*');
+  if (error || !todos || !todos.length) {
+    loadEl.style.display = 'none';
+    contentEl.innerHTML = '<div class="ranking-empty">Nenhum palpite registrado ainda.</div>';
+    return;
+  }
+
+  // Busca resultados reais
+  const resultados = await fetchResultados();
+
+  // Agrupa por usuário
+  const pontos = {};
+  const acertos = {};
+  const cravados = {};
+
+  for (const p of todos) {
+    if (!pontos[p.nome]) { pontos[p.nome] = 0; acertos[p.nome] = 0; cravados[p.nome] = 0; }
+    const res = resultados[p.game_id];
+    const pts = calcPoints(p, res);
+    if (pts !== null) {
+      pontos[p.nome] += pts;
+      if (pts >= 1) acertos[p.nome]++;
+      if (pts === 3) cravados[p.nome]++;
+    }
+  }
+
+  const ranking = Object.keys(pontos)
+    .map(n => ({ nome: n, pts: pontos[n], acertos: acertos[n], cravados: cravados[n] }))
+    .sort((a, b) => b.pts - a.pts || b.cravados - a.cravados || b.acertos - a.acertos);
+
+  loadEl.style.display = 'none';
+
+  const posIcons = ['🥇', '🥈', '🥉'];
+  let html = `
+    <div class="ranking-header">
+      <span class="ranking-title">🏆 Ranking Kebolets</span>
+      <span class="ranking-sub">Copa 2026</span>
+    </div>
+    <div class="ranking-card">
+      <div class="ranking-legend">
+        <div></div>
+        <div></div>
+        <div class="rk-col"><span class="rk-col-label">Pts</span></div>
+        <div class="rk-col"><span class="rk-col-label">✅</span></div>
+        <div class="rk-col"><span class="rk-col-label">🎯</span></div>
+      </div>`;
+
+  ranking.forEach((r, i) => {
+    const isMe = r.nome === currentUser;
+    const posClass = i === 0 ? 'pos gold' : i === 1 ? 'pos silver' : i === 2 ? 'pos bronze' : 'pos';
+    const rowClass = isMe ? 'ranking-row me' : i === 0 ? 'ranking-row top1' : 'ranking-row';
+    const icon = posIcons[i] || `${i + 1}`;
+    html += `
+      <div class="${rowClass}">
+        <div class="${posClass}">${icon}</div>
+        <div class="rk-name${isMe ? ' me-label' : ''}">${r.nome}</div>
+        <div class="rk-col"><span class="rk-pts">${r.pts}</span></div>
+        <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.acertos}</div>
+        <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.cravados}</div>
+      </div>`;
+  });
+
+  html += `</div>
+    <div style="text-align:center;font-size:11px;color:var(--gray-400);margin-top:8px;">
+      ✅ resultados certos &nbsp;·&nbsp; 🎯 placares exatos
+    </div>`;
+
+  contentEl.innerHTML = html;
+}
+
 function renderGames() {
   const section = document.getElementById('games-section');
   const today = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' });
@@ -178,57 +325,62 @@ function renderGames() {
   if (!todayGames.length) {
     section.innerHTML = `<div class="empty-day"><strong>Sem jogos hoje</strong>Não há partidas programadas para hoje. Volte amanhã!</div>`;
     section.style.display = 'block';
-    return;
+  } else {
+    let html = `<div class="day-label">Jogos de hoje — ${today}</div>`;
+    for (const g of todayGames) {
+      const locked = isLocked(g);
+      const saved = savedGuesses[g.id];
+      const hVal = saved ? saved.home_score : '0';
+      const aVal = saved ? saved.away_score : '0';
+      const timeLabel = formatKickoffBRT(g.kickoff_utc);
+      let badge = locked ? `<span class="badge badge-locked">🔒 Encerrado</span>`
+        : saved ? `<span class="badge badge-saved">✓ Palpite salvo</span>`
+        : `<span class="badge badge-open">Aberto</span>`;
+      const btnLabel = saved ? 'Atualizar palpite' : 'Salvar palpite';
+      html += `
+        <div class="match-card">
+          <div class="match-meta">
+            <span class="match-time">🕐 ${timeLabel}</span>
+            <span class="match-group">${g.grupo}</span>
+          </div>
+          <div class="match-body">
+            <div class="team"><span class="team-flag">${g.home_flag}</span><span class="team-name">${g.home_name}</span></div>
+            <div class="score-inputs">
+              <input class="score-input" type="number" min="0" max="20" step="1" id="h-${g.id}" value="${hVal}" ${locked ? 'disabled' : ''}>
+              <span class="score-sep">×</span>
+              <input class="score-input" type="number" min="0" max="20" step="1" id="a-${g.id}" value="${aVal}" ${locked ? 'disabled' : ''}>
+            </div>
+            <div class="team"><span class="team-flag">${g.away_flag}</span><span class="team-name">${g.away_name}</span></div>
+          </div>
+          <div class="match-footer">
+            ${badge}
+            ${!locked ? `<button class="btn-save" onclick="salvarPalpite('${g.id}')">${btnLabel}</button>` : '<div></div>'}
+          </div>
+        </div>`;
+    }
+    section.innerHTML = html;
+    section.style.display = 'block';
+    twemoji.parse(section, { folder: 'svg', ext: '.svg' });
   }
 
-  let html = `<div class="day-label">Jogos de hoje — ${today}</div>`;
-  for (const g of todayGames) {
-    const locked = isLocked(g);
-    const saved = savedGuesses[g.id];
-    const disabled = locked;
-    const hVal = saved ? saved.home_score : '0';
-    const aVal = saved ? saved.away_score : '0';
-    const timeLabel = formatKickoffBRT(g.kickoff_utc);
+  // Botão ranking
+  section.innerHTML += `<button class="btn-ranking" id="btn-ranking" onclick="toggleRanking()">🏆 Ver ranking</button>`;
+}
 
-    let badge = '';
-    if (locked) badge = `<span class="badge badge-locked">🔒 Encerrado</span>`;
-    else if (saved) badge = `<span class="badge badge-saved">✓ Palpite salvo</span>`;
-    else badge = `<span class="badge badge-open">Aberto</span>`;
-
-    const btnLabel = saved ? 'Atualizar palpite' : 'Salvar palpite';
-
-    html += `
-      <div class="match-card">
-        <div class="match-meta">
-          <span class="match-time">🕐 ${timeLabel}</span>
-          <span class="match-group">${g.grupo}</span>
-        </div>
-        <div class="match-body">
-          <div class="team">
-            <span class="team-flag">${g.home_flag}</span>
-            <span class="team-name">${g.home_name}</span>
-          </div>
-          <div class="score-inputs">
-            <input class="score-input" type="number" min="0" max="20" step="1"
-              id="h-${g.id}" value="${hVal}" ${disabled ? 'disabled' : ''}>
-            <span class="score-sep">×</span>
-            <input class="score-input" type="number" min="0" max="20" step="1"
-              id="a-${g.id}" value="${aVal}" ${disabled ? 'disabled' : ''}>
-          </div>
-          <div class="team">
-            <span class="team-flag">${g.away_flag}</span>
-            <span class="team-name">${g.away_name}</span>
-          </div>
-        </div>
-        <div class="match-footer">
-          ${badge}
-          ${!disabled ? `<button class="btn-save" onclick="salvarPalpite('${g.id}')">${btnLabel}</button>` : '<div></div>'}
-        </div>
-      </div>`;
+async function toggleRanking() {
+  rankingVisible = !rankingVisible;
+  const btn = document.getElementById('btn-ranking');
+  const rs = document.getElementById('ranking-section');
+  if (rankingVisible) {
+    btn.textContent = '✕ Fechar ranking';
+    btn.classList.add('active');
+    rs.style.display = 'block';
+    await renderRanking();
+  } else {
+    btn.textContent = '🏆 Ver ranking';
+    btn.classList.remove('active');
+    rs.style.display = 'none';
   }
-  section.innerHTML = html;
-  section.style.display = 'block';
-  twemoji.parse(section, { folder: 'svg', ext: '.svg' });
 }
 
 async function enterWithName() {
@@ -274,12 +426,14 @@ async function salvarPalpite(gameId) {
 
 function sair() {
   currentUser = null;
+  rankingVisible = false;
   localStorage.removeItem('bolao_kebolets_nome');
   savedGuesses = {};
   todayGames = [];
   document.getElementById('user-bar').style.display = 'none';
   document.getElementById('games-section').style.display = 'none';
   document.getElementById('games-section').innerHTML = '';
+  document.getElementById('ranking-section').style.display = 'none';
   document.getElementById('name-section').style.display = 'block';
   document.getElementById('name-input').value = '';
 }
