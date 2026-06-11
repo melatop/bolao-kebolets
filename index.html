@@ -332,8 +332,10 @@ function renderGames() {
     for (const g of todayGames) {
       const locked = isLocked(g);
       const saved = savedGuesses[g.id];
-      const hVal = saved ? saved.home_score : '0';
-      const aVal = saved ? saved.away_score : '0';
+      const prevH = document.getElementById('h-' + g.id);
+      const prevA = document.getElementById('a-' + g.id);
+      const hVal = saved ? saved.home_score : (prevH ? prevH.value : '0');
+      const aVal = saved ? saved.away_score : (prevA ? prevA.value : '0');
       const timeLabel = formatKickoffBRT(g.kickoff_utc);
       let badge = locked ? `<span class="badge badge-locked">🔒 Encerrado</span>`
         : saved ? `<span class="badge badge-saved">✓ Palpite salvo</span>`
