@@ -320,8 +320,6 @@ function renderGames() {
 
   const temAbertos = todayGames.some(g => !isLocked(g));
   if (temAbertos) section.innerHTML += `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;opacity:0.4;cursor:not-allowed;" disabled onclick="salvarTodos()">Salvar</button>`;
-  section.innerHTML += `<button class="btn-ranking" id="btn-placares" onclick="togglePlacares()" style="margin-bottom:8px;">${placaresVisible ? '✕ Fechar placares' : '📊 Ver placares do dia'}</button>`;
-  section.innerHTML += `<button class="btn-ranking" id="btn-ranking" onclick="toggleRanking()">${rankingVisible ? '✕ Fechar ranking' : '🏆 Ver ranking'}</button>`;
   if (rankingVisible) document.getElementById('ranking-section').style.display = 'block';
   if (placaresVisible) { document.getElementById('placares-section').style.display = 'block'; renderPlacares(); }
 }
@@ -357,6 +355,7 @@ async function renderPlacares() {
   let html = `
     <div class="ranking-header" style="margin-top:1.25rem;">
       <span class="ranking-title">📊 Placares do dia</span>
+      <button onclick="togglePlacares()" style="font-size:12px;color:var(--gray-400);background:none;border:none;cursor:pointer;font-family:'Barlow',sans-serif;font-weight:600;">✕ Fechar</button>
     </div>
     <div class="placares-card">`;
 
@@ -391,22 +390,6 @@ async function renderPlacares() {
   contentEl.querySelectorAll('.placar-flag').forEach(el => {
     twemoji.parse(el, { folder: 'svg', ext: '.svg' });
   });
-}
-
-async function toggleRanking() {
-  rankingVisible = !rankingVisible;
-  const btn = document.getElementById('btn-ranking');
-  const rs = document.getElementById('ranking-section');
-  if (rankingVisible) {
-    btn.textContent = '✕ Fechar ranking';
-    btn.classList.add('active');
-    rs.style.display = 'block';
-    await renderRanking();
-  } else {
-    btn.textContent = '🏆 Ver ranking';
-    btn.classList.remove('active');
-    rs.style.display = 'none';
-  }
 }
 
 async function enterWithName() {
