@@ -24,8 +24,6 @@
   .pts-pill { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 500; }
   .pts-pill strong { color: var(--gold); }
   main { max-width: 560px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
-
-  /* login */
   #name-section { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 1.5rem; margin-bottom: 1.5rem; text-align: center; }
   #name-section h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; color: var(--green); text-transform: uppercase; margin-bottom: 6px; }
   #name-section p { font-size: 14px; color: var(--gray-400); margin-bottom: 1rem; }
@@ -34,15 +32,11 @@
   .name-row input:focus { border-color: var(--green); }
   .btn-enter { background: var(--green); color: var(--white); border: none; border-radius: var(--radius-sm); padding: 9px 20px; font-size: 14px; font-weight: 600; font-family: 'Barlow', sans-serif; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
   .btn-enter:hover { background: var(--green-dark); }
-
-  /* user bar */
   #user-bar { display: none; align-items: center; gap: 10px; background: var(--white); border-radius: var(--radius-sm); border: 1px solid var(--gray-200); padding: 8px 14px; margin-bottom: 1.25rem; }
   .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--green); color: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; flex-shrink: 0; }
   #user-bar .uname { font-size: 14px; font-weight: 600; flex: 1; color: var(--gray-900); }
   .btn-sair { font-size: 12px; color: var(--gray-400); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; font-family: 'Barlow', sans-serif; }
   .btn-sair:hover { background: var(--gray-100); color: var(--gray-700); }
-
-  /* jogos */
   .day-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-400); margin-bottom: 10px; }
   .match-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 1rem 1.25rem; margin-bottom: 12px; }
   .match-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -70,36 +64,6 @@
   .empty-day { text-align: center; padding: 2.5rem 1rem; color: var(--gray-400); font-size: 14px; line-height: 1.7; background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); }
   .empty-day strong { display: block; font-size: 18px; color: var(--gray-700); margin-bottom: 6px; }
   #loading-games { text-align: center; padding: 2rem; color: var(--gray-400); font-size: 14px; }
-
-  /* botão ranking */
-  .btn-ranking { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: var(--white); color: var(--green); border: 1.5px solid var(--green); border-radius: var(--radius-sm); padding: 11px 20px; font-size: 14px; font-weight: 600; font-family: 'Barlow', sans-serif; cursor: pointer; transition: all 0.15s; margin-top: 8px; }
-  .btn-ranking:hover { background: var(--green-light); }
-  .btn-ranking.active { background: var(--green); color: var(--white); }
-
-  /* ranking */
-  #ranking-section { margin-top: 4px; }
-  .ranking-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; margin-top: 1.25rem; }
-  .ranking-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--gray-900); text-transform: uppercase; letter-spacing: 0.03em; }
-  .ranking-sub { font-size: 12px; color: var(--gray-400); }
-  .ranking-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); overflow: hidden; }
-  .ranking-row { display: grid; grid-template-columns: 32px 1fr 48px 48px 48px; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--gray-100); }
-  .ranking-row:last-child { border-bottom: none; }
-  .ranking-row.me { background: var(--green-light); }
-  .ranking-row.top1 { background: #fffbea; }
-  .pos { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; color: var(--gray-400); text-align: center; }
-  .pos.gold { color: #c89b00; }
-  .pos.silver { color: #888; }
-  .pos.bronze { color: #a0612a; }
-  .rk-name { font-size: 14px; font-weight: 600; color: var(--gray-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .rk-name.me-label::after { content: ' (você)'; font-weight: 400; color: var(--gray-400); font-size: 12px; }
-  .rk-col { text-align: center; font-size: 13px; }
-  .rk-col-label { font-size: 10px; color: var(--gray-400); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-  .rk-pts { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--green); }
-  .ranking-legend { display: grid; grid-template-columns: 32px 1fr 48px 48px 48px; gap: 8px; padding: 6px 16px 8px; border-bottom: 1px solid var(--gray-200); }
-  .ranking-empty { text-align: center; padding: 2rem; color: var(--gray-400); font-size: 14px; }
-  #loading-ranking { text-align: center; padding: 1.5rem; color: var(--gray-400); font-size: 14px; }
-
-  /* toast */
   #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--gray-900); color: var(--white); padding: 10px 22px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 999; white-space: nowrap; }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   @media (max-width: 400px) { .team-flag { width: 32px; height: 32px; } .team-flag img { width: 32px; height: 32px; } .score-input { width: 38px; height: 38px; font-size: 18px; } }
@@ -133,10 +97,6 @@
   </div>
   <div id="loading-games" style="display:none;">Carregando jogos...</div>
   <div id="games-section" style="display:none;"></div>
-  <div id="ranking-section" style="display:none;">
-    <div id="loading-ranking" style="display:none;">Calculando ranking...</div>
-    <div id="ranking-content"></div>
-  </div>
 </main>
 <div id="toast"></div>
 
@@ -144,14 +104,12 @@
 <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
 <script>
 const SUPABASE_URL = 'https://yciqdafnvcxrxgkwltxy.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljaXFkYWZudmN4cnhna3dsdHh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODI4MjIsImV4cCI6MjA5Njc1ODgyMn0.cZtvIIuPYMteHrqHjRlzLw9dU8bUeVr4LCOVvhVTxqw';
-const FDORG_TOKEN = '5ef3e39c67914f82b1f6176d31df2581';
+const SUPABASE_KEY = 'sb_publishable_sGccPD_mS9-InXnBqLSyXA_9r-FZu9s';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser = null;
 let todayGames = [];
 let savedGuesses = {};
-let rankingVisible = false;
 
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -165,92 +123,43 @@ function isLocked(game) {
 }
 
 function todayRangeBRT() {
+  // Retorna inicio e fim do dia de hoje em BRT (UTC-3) como strings UTC
   const now = new Date();
-  const brtOffset = -3 * 60;
-  const localOffset = now.getTimezoneOffset();
+  const brtOffset = -3 * 60; // minutos
+  const localOffset = now.getTimezoneOffset(); // minutos
   const diff = (localOffset + brtOffset) * 60 * 1000;
   const brtNow = new Date(now.getTime() + diff);
   const y = brtNow.getUTCFullYear();
   const m = String(brtNow.getUTCMonth() + 1).padStart(2, '0');
   const d = String(brtNow.getUTCDate()).padStart(2, '0');
+  // Dia de hoje BRT: começa às 03:00 UTC e termina às 02:59:59 UTC do dia seguinte
   const start = `${y}-${m}-${d}T03:00:00Z`;
   const nextDay = new Date(`${y}-${m}-${d}T03:00:00Z`);
   nextDay.setUTCDate(nextDay.getUTCDate() + 1);
-  return { start, end: nextDay.toISOString() };
+  const end = nextDay.toISOString();
+  return { start, end };
 }
 
 function formatKickoffBRT(utcString) {
-  return new Date(utcString).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) + ' (Brasília)';
+  const d = new Date(utcString);
+  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) + ' (Brasília)';
 }
 
 function initDateLabel() {
+  const d = new Date();
   document.getElementById('date-label').textContent =
-    new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo' });
+    d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo' });
 }
-
-function todayDateBRT() {
-  const now = new Date();
-  const brt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-  const y = brt.getFullYear();
-  const m = String(brt.getMonth() + 1).padStart(2, '0');
-  const d = String(brt.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-const PROXY = 'https://yciqdafnvcxrxgkwltxy.supabase.co/functions/v1/football-proxy';
-
-// Mapa de TLA da API para emoji de bandeira
-const FLAGS = {
-  MEX:'🇲🇽',RSA:'🇿🇦',KOR:'🇰🇷',CZE:'🇨🇿',CAN:'🇨🇦',BIH:'🇧🇦',QAT:'🇶🇦',SUI:'🇨🇭',
-  BRA:'🇧🇷',MAR:'🇲🇦',HAI:'🇭🇹',SCO:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',USA:'🇺🇸',PAR:'🇵🇾',AUS:'🇦🇺',TUR:'🇹🇷',
-  GER:'🇩🇪',CIV:'🇨🇮',ECU:'🇪🇨',CUW:'🇨🇼',NED:'🇳🇱',JPN:'🇯🇵',SWE:'🇸🇪',TUN:'🇹🇳',
-  BEL:'🇧🇪',EGY:'🇪🇬',IRN:'🇮🇷',NZL:'🇳🇿',ESP:'🇪🇸',CPV:'🇨🇻',KSA:'🇸🇦',URU:'🇺🇾',
-  FRA:'🇫🇷',SEN:'🇸🇳',IRQ:'🇮🇶',NOR:'🇳🇴',ARG:'🇦🇷',ALG:'🇩🇿',AUT:'🇦🇹',JOR:'🇯🇴',
-  POR:'🇵🇹',COD:'🇨🇩',UZB:'🇺🇿',COL:'🇨🇴',ENG:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',CRO:'🇭🇷',GHA:'🇬🇭',PAN:'🇵🇦',
-  SRB:'🇷🇸',POL:'🇵🇱',MLI:'🇲🇱',VEN:'🇻🇪',
-};
-
-const GRUPOS = {
-  MEX:'Grupo A',RSA:'Grupo A',KOR:'Grupo A',CZE:'Grupo A',
-  CAN:'Grupo B',BIH:'Grupo B',QAT:'Grupo B',SUI:'Grupo B',
-  BRA:'Grupo C',MAR:'Grupo C',HAI:'Grupo C',SCO:'Grupo C',
-  USA:'Grupo D',PAR:'Grupo D',AUS:'Grupo D',TUR:'Grupo D',
-  GER:'Grupo E',CIV:'Grupo E',ECU:'Grupo E',CUW:'Grupo E',
-  NED:'Grupo F',JPN:'Grupo F',SWE:'Grupo F',TUN:'Grupo F',
-  BEL:'Grupo G',EGY:'Grupo G',IRN:'Grupo G',NZL:'Grupo G',
-  ESP:'Grupo H',CPV:'Grupo H',KSA:'Grupo H',URU:'Grupo H',
-  FRA:'Grupo I',SEN:'Grupo I',IRQ:'Grupo I',NOR:'Grupo I',
-  ARG:'Grupo J',ALG:'Grupo J',AUT:'Grupo J',JOR:'Grupo J',
-  POR:'Grupo K',COD:'Grupo K',UZB:'Grupo K',COL:'Grupo K',
-  ENG:'Grupo L',CRO:'Grupo L',GHA:'Grupo L',PAN:'Grupo L',
-};
 
 async function fetchTodayGames() {
-  try {
-    const date = todayDateBRT();
-    const resp = await fetch(`${PROXY}?endpoint=matches&date=${date}`, {
-      headers: { 'apikey': SUPABASE_KEY }
-    });
-    if (!resp.ok) return [];
-    const json = await resp.json();
-    return (json.matches || []).map(m => {
-      const tla_h = m.homeTeam.tla || '';
-      const tla_a = m.awayTeam.tla || '';
-      const dateStr = m.utcDate.slice(0, 10).replace(/-/g, '');
-      return {
-        id: `${tla_h.toLowerCase()}-${tla_a.toLowerCase()}-${dateStr}`,
-        grupo: GRUPOS[tla_h] || m.group || 'Copa 2026',
-        home_name: m.homeTeam.shortName || m.homeTeam.name,
-        home_flag: FLAGS[tla_h] || '🏳️',
-        away_name: m.awayTeam.shortName || m.awayTeam.name,
-        away_flag: FLAGS[tla_a] || '🏳️',
-        kickoff_utc: m.utcDate,
-      };
-    });
-  } catch(e) {
-    console.error('Erro ao buscar jogos:', e);
-    return [];
-  }
+  const now = new Date();
+  const brt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  const mo = String(brt.getMonth() + 1).padStart(2, '0');
+  const dy = String(brt.getDate()).padStart(2, '0');
+  const dateKey = mo + dy;
+  const { data, error } = await sb.from('jogos').select('*').order('kickoff_utc', { ascending: true });
+  if (error) { console.error(error); return []; }
+  return (data || []).filter(g => g.id.endsWith(dateKey));
 }
 
 async function loadGuesses(nome) {
@@ -261,120 +170,6 @@ async function loadGuesses(nome) {
   if (data) data.forEach(r => { savedGuesses[r.game_id] = r; });
 }
 
-function calcPoints(palpite, resultado) {
-  if (!resultado) return null; // jogo sem resultado ainda
-  const { home_score: ph, away_score: pa } = palpite;
-  const { home_score: rh, away_score: ra } = resultado;
-  if (ph === rh && pa === ra) return 3;
-  const pRes = ph > pa ? 'H' : ph < pa ? 'A' : 'D';
-  const rRes = rh > ra ? 'H' : rh < ra ? 'A' : 'D';
-  if (pRes === rRes) return 1;
-  return 0;
-}
-
-async function fetchResultados() {
-  try {
-    const resp = await fetch(`${PROXY}?endpoint=matches&status=FINISHED`, {
-      headers: { 'apikey': SUPABASE_KEY }
-    });
-    if (!resp.ok) return {};
-    const json = await resp.json();
-    const map = {};
-    for (const m of (json.matches || [])) {
-      const dateStr = m.utcDate.slice(0, 10).replace(/-/g, '');
-      const home = m.homeTeam.tla?.toLowerCase() || '';
-      const away = m.awayTeam.tla?.toLowerCase() || '';
-      map[`${home}-${away}-${dateStr}`] = {
-        home_score: m.score.fullTime.home,
-        away_score: m.score.fullTime.away
-      };
-    }
-    return map;
-  } catch(e) {
-    console.error('Erro ao buscar resultados:', e);
-    return {};
-  }
-}
-
-async function renderRanking() {
-  const loadEl = document.getElementById('loading-ranking');
-  const contentEl = document.getElementById('ranking-content');
-  loadEl.style.display = 'block';
-  contentEl.innerHTML = '';
-
-  // Busca todos os palpites
-  const { data: todos, error } = await sb.from('palpites').select('*');
-  if (error || !todos || !todos.length) {
-    loadEl.style.display = 'none';
-    contentEl.innerHTML = '<div class="ranking-empty">Nenhum palpite registrado ainda.</div>';
-    return;
-  }
-
-  // Busca resultados reais
-  const resultados = await fetchResultados();
-
-  // Agrupa por usuário
-  const pontos = {};
-  const acertos = {};
-  const cravados = {};
-
-  for (const p of todos) {
-    if (!pontos[p.nome]) { pontos[p.nome] = 0; acertos[p.nome] = 0; cravados[p.nome] = 0; }
-    const res = resultados[p.game_id];
-    const pts = calcPoints(p, res);
-    if (pts !== null) {
-      pontos[p.nome] += pts;
-      if (pts >= 1) acertos[p.nome]++;
-      if (pts === 3) cravados[p.nome]++;
-    }
-  }
-
-  const OCULTOS = ['test'];
-  const ranking = Object.keys(pontos)
-    .filter(n => !OCULTOS.includes(n.toLowerCase().trim()))
-    .map(n => ({ nome: n, pts: pontos[n], acertos: acertos[n], cravados: cravados[n] }))
-    .sort((a, b) => b.pts - a.pts || b.cravados - a.cravados || b.acertos - a.acertos);
-
-  loadEl.style.display = 'none';
-
-  const posIcons = ['🥇', '🥈', '🥉'];
-  let html = `
-    <div class="ranking-header">
-      <span class="ranking-title">🏆 Ranking Kebolets</span>
-      <span class="ranking-sub">Copa 2026</span>
-    </div>
-    <div class="ranking-card">
-      <div class="ranking-legend">
-        <div></div>
-        <div></div>
-        <div class="rk-col"><span class="rk-col-label">Pts</span></div>
-        <div class="rk-col"><span class="rk-col-label">✅</span></div>
-        <div class="rk-col"><span class="rk-col-label">🎯</span></div>
-      </div>`;
-
-  ranking.forEach((r, i) => {
-    const isMe = r.nome === currentUser;
-    const posClass = i === 0 ? 'pos gold' : i === 1 ? 'pos silver' : i === 2 ? 'pos bronze' : 'pos';
-    const rowClass = isMe ? 'ranking-row me' : i === 0 ? 'ranking-row top1' : 'ranking-row';
-    const icon = posIcons[i] || `${i + 1}`;
-    html += `
-      <div class="${rowClass}">
-        <div class="${posClass}">${icon}</div>
-        <div class="rk-name${isMe ? ' me-label' : ''}">${r.nome}</div>
-        <div class="rk-col"><span class="rk-pts">${r.pts}</span></div>
-        <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.acertos}</div>
-        <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.cravados}</div>
-      </div>`;
-  });
-
-  html += `</div>
-    <div style="text-align:center;font-size:11px;color:var(--gray-400);margin-top:8px;">
-      ✅ resultados certos &nbsp;·&nbsp; 🎯 placares exatos
-    </div>`;
-
-  contentEl.innerHTML = html;
-}
-
 function renderGames() {
   const section = document.getElementById('games-section');
   const today = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' });
@@ -382,69 +177,57 @@ function renderGames() {
   if (!todayGames.length) {
     section.innerHTML = `<div class="empty-day"><strong>Sem jogos hoje</strong>Não há partidas programadas para hoje. Volte amanhã!</div>`;
     section.style.display = 'block';
-  } else {
-    let html = `<div class="day-label">Jogos de hoje — ${today}</div>`;
-    for (const g of todayGames) {
-      const locked = isLocked(g);
-      const saved = savedGuesses[g.id];
-      const prevH = document.getElementById('h-' + g.id);
-      const prevA = document.getElementById('a-' + g.id);
-      const hVal = saved ? saved.home_score : (prevH ? prevH.value : '0');
-      const aVal = saved ? saved.away_score : (prevA ? prevA.value : '0');
-      const timeLabel = formatKickoffBRT(g.kickoff_utc);
-      html += `
-        <div class="match-card">
-          <div class="match-meta">
-            <span class="match-time">${timeLabel}</span>
-            <span class="match-group">${g.grupo}</span>
-          </div>
-          <div class="match-body">
-            <div class="team"><span class="team-flag">${g.home_flag}</span><span class="team-name">${g.home_name}</span></div>
-            <div class="score-inputs">
-              <input class="score-input" type="number" min="0" max="20" step="1" id="h-${g.id}" value="${hVal}" ${locked ? 'disabled' : ''} oninput="onEditPalpite('${g.id}')">
-              <span class="score-sep">×</span>
-              <input class="score-input" type="number" min="0" max="20" step="1" id="a-${g.id}" value="${aVal}" ${locked ? 'disabled' : ''} oninput="onEditPalpite('${g.id}')">
-            </div>
-            <div class="team"><span class="team-flag">${g.away_flag}</span><span class="team-name">${g.away_name}</span></div>
-          </div>
-          ${locked
-            ? `<div class="match-footer"><span class="badge badge-locked">🔒 Encerrado</span><div></div></div>`
-            : `<div class="match-footer" style="justify-content:flex-end;">
-                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-                  <button class="btn-save" onclick="salvarPalpite('${g.id}')">Salvar</button>
-                  <span class="saved-confirm" id="saved-${g.id}" style="font-size:11px;color:var(--green);font-weight:600;visibility:${saved ? 'visible' : 'hidden'};">✓ Palpite salvo</span>
-                </div>
-              </div>`
-          }
-        </div>`;
-    }
-    section.innerHTML = html;
-    section.style.display = 'block';
-    twemoji.parse(section, { folder: 'svg', ext: '.svg' });
+    return;
   }
 
-  // Botão salvar todos + ranking
-  const temAbertos = todayGames.some(g => !isLocked(g));
-  section.innerHTML += temAbertos
-    ? `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;" onclick="salvarTodos()">Salvar</button>`
-    : '';
-  section.innerHTML += `<button class="btn-ranking" id="btn-ranking" onclick="toggleRanking()">🏆 Ver ranking</button>`;
-}
+  let html = `<div class="day-label">Jogos de hoje — ${today}</div>`;
+  for (const g of todayGames) {
+    const locked = isLocked(g);
+    const saved = savedGuesses[g.id];
+    const disabled = locked;
+    const hVal = saved ? saved.home_score : '0';
+    const aVal = saved ? saved.away_score : '0';
+    const timeLabel = formatKickoffBRT(g.kickoff_utc);
 
-async function toggleRanking() {
-  rankingVisible = !rankingVisible;
-  const btn = document.getElementById('btn-ranking');
-  const rs = document.getElementById('ranking-section');
-  if (rankingVisible) {
-    btn.textContent = '✕ Fechar ranking';
-    btn.classList.add('active');
-    rs.style.display = 'block';
-    await renderRanking();
-  } else {
-    btn.textContent = '🏆 Ver ranking';
-    btn.classList.remove('active');
-    rs.style.display = 'none';
+    let badge = '';
+    if (locked) badge = `<span class="badge badge-locked">🔒 Encerrado</span>`;
+    else if (saved) badge = `<span class="badge badge-saved">✓ Palpite salvo</span>`;
+    else badge = `<span class="badge badge-open">Aberto</span>`;
+
+    const btnLabel = saved ? 'Atualizar palpite' : 'Salvar palpite';
+
+    html += `
+      <div class="match-card">
+        <div class="match-meta">
+          <span class="match-time">🕐 ${timeLabel}</span>
+          <span class="match-group">${g.grupo}</span>
+        </div>
+        <div class="match-body">
+          <div class="team">
+            <span class="team-flag">${g.home_flag}</span>
+            <span class="team-name">${g.home_name}</span>
+          </div>
+          <div class="score-inputs">
+            <input class="score-input" type="number" min="0" max="20" step="1"
+              id="h-${g.id}" value="${hVal}" ${disabled ? 'disabled' : ''}>
+            <span class="score-sep">×</span>
+            <input class="score-input" type="number" min="0" max="20" step="1"
+              id="a-${g.id}" value="${aVal}" ${disabled ? 'disabled' : ''}>
+          </div>
+          <div class="team">
+            <span class="team-flag">${g.away_flag}</span>
+            <span class="team-name">${g.away_name}</span>
+          </div>
+        </div>
+        <div class="match-footer">
+          ${badge}
+          ${!disabled ? `<button class="btn-save" onclick="salvarPalpite('${g.id}')">${btnLabel}</button>` : '<div></div>'}
+        </div>
+      </div>`;
   }
+  section.innerHTML = html;
+  section.style.display = 'block';
+  twemoji.parse(section, { folder: 'svg', ext: '.svg' });
 }
 
 async function enterWithName() {
@@ -465,33 +248,6 @@ async function enterWithName() {
   renderGames();
 }
 
-async function salvarTodos() {
-  const btn = document.getElementById('btn-salvar-todos');
-  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
-  const jogosAbertos = todayGames.filter(g => !isLocked(g));
-  if (!jogosAbertos.length) { showToast('Nenhum jogo aberto para salvar.'); return; }
-  let salvos = 0;
-  for (const g of jogosAbertos) {
-    const h = document.getElementById('h-' + g.id)?.value;
-    const a = document.getElementById('a-' + g.id)?.value;
-    const hi = parseInt(h), ai = parseInt(a);
-    if (isNaN(hi) || isNaN(ai) || hi < 0 || ai < 0) continue;
-    const { error } = await sb.from('palpites').upsert(
-      { nome: currentUser, game_id: g.id, home_score: hi, away_score: ai },
-      { onConflict: 'nome,game_id' }
-    );
-    if (!error) salvos++;
-  }
-  await loadGuesses(currentUser);
-  showToast(salvos === jogosAbertos.length ? 'Todos os palpites salvos! 🎯' : `${salvos} palpite(s) salvo(s).`);
-  renderGames();
-}
-
-function onEditPalpite(gameId) {
-  const el = document.getElementById('saved-' + gameId);
-  if (el) el.style.visibility = 'hidden';
-}
-
 async function salvarPalpite(gameId) {
   const game = todayGames.find(g => g.id === gameId);
   if (isLocked(game)) { showToast('Partida já iniciou. Palpite encerrado.'); renderGames(); return; }
@@ -507,26 +263,22 @@ async function salvarPalpite(gameId) {
   );
   if (error) {
     if (error.code === '23505') showToast('Você já enviou um palpite para esse jogo.');
-    else { showToast('Erro ao salvar. Tente novamente.'); }
-    if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
+    else { showToast('Erro ao salvar. Tente novamente.'); if (btn) { btn.disabled = false; btn.textContent = 'Salvar palpite'; } }
     return;
   }
   await loadGuesses(currentUser);
-  if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
-  const confirmEl = document.getElementById('saved-' + gameId);
-  if (confirmEl) confirmEl.style.visibility = 'visible';
+  showToast('Palpite salvo! 🎯');
+  renderGames();
 }
 
 function sair() {
   currentUser = null;
-  rankingVisible = false;
   localStorage.removeItem('bolao_kebolets_nome');
   savedGuesses = {};
   todayGames = [];
   document.getElementById('user-bar').style.display = 'none';
   document.getElementById('games-section').style.display = 'none';
   document.getElementById('games-section').innerHTML = '';
-  document.getElementById('ranking-section').style.display = 'none';
   document.getElementById('name-section').style.display = 'block';
   document.getElementById('name-input').value = '';
 }
