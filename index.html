@@ -857,6 +857,24 @@ async function enterWithName() {
   document.getElementById('historico-section').style.display = 'block';
   try { await Promise.race([renderRanking(), timeout(8000)]); } catch(e) { console.error(e); }
   try { await Promise.race([renderPlacares(), timeout(8000)]); } catch(e) { console.error(e); }
+
+  // Auto-refresh a cada 60s se há jogo ao vivo
+  iniciarAutoRefresh();
+}
+
+let _autoRefreshTimer = null;
+async function iniciarAutoRefresh() {
+  if (_autoRefreshTimer) clearInterval(_autoRefreshTimer);
+  _autoRefreshTimer = setInterval(async () => {
+    // Só atualiza se há jogos em andamento
+    const temAoVivo = todayGames.some(g => isLocked(g));
+    if (!temAoVivo || !currentUser) { clearInterval(_autoRefreshTimer); return; }
+    try {
+      window._resultadosCache = await fetchResultados();
+      renderGames();
+      renderPlacares();
+    } catch(e) { console.error(e); }
+  }, 60000);
 }
 async function salvarTodos() {
   const btn = document.getElementById('btn-salvar-todos');
@@ -898,7 +916,7 @@ function sair() {
   document.getElementById('ranking-section').style.display = 'none';
   document.getElementById('placares-section').style.display = 'none';
   document.getElementById('historico-section').style.display = 'none';
-  document.getElementById('historico-content').innerHTML = '';
+  if (_autoRefreshTimer) { clearInterval(_autoRefreshTimer); _autoRefreshTimer = null; }
   document.getElementById('btn-historico') && (document.getElementById('btn-historico').textContent = '📋 Meu histórico');
   document.getElementById('btn-historico') && document.getElementById('btn-historico').classList.remove('active');
   document.getElementById('rename-section').style.display = 'none';
