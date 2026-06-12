@@ -118,10 +118,11 @@
 <main>
   <div id="name-section">
     <h2>Quem é você?</h2>
-    <p>Digite seu nome para registrar seus palpites.</p>
-    <div class="name-row">
-      <input type="text" id="name-input" placeholder="Seu nome" maxlength="40" />
-      <button class="btn-enter" onclick="enterWithName()">Entrar</button>
+    <p id="login-hint">Novo usuário? Crie um nome e senha. Já tem conta? Digite seu nome e senha.</p>
+    <div class="name-row" style="flex-direction:column;gap:8px;">
+      <input type="text" id="name-input" placeholder="Seu nome" maxlength="40" style="width:100%;max-width:320px;margin:0 auto;" onkeydown="if(event.key==='Enter')document.getElementById('pw-input').focus()" />
+      <input type="password" id="pw-input" placeholder="Senha" maxlength="40" style="width:100%;max-width:320px;margin:0 auto;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-size:15px;font-family:'Barlow',sans-serif;color:var(--gray-900);background:var(--gray-50);outline:none;" onkeydown="if(event.key==='Enter')enterWithName()" />
+      <button class="btn-enter" onclick="enterWithName()" style="width:100%;max-width:320px;margin:0 auto;">Entrar</button>
     </div>
   </div>
   <div id="user-bar">
@@ -491,16 +492,39 @@ async function renderPlacares() {
 
 async function enterWithName() {
   const input = document.getElementById('name-input');
+  const pwInput = document.getElementById('pw-input');
   const nome = input.value.trim().toUpperCase();
-  if (!nome) { showToast('Digite seu nome para continuar.'); return; }
+  const senha = pwInput ? pwInput.value.trim() : '';
 
-  // Se nome diferente do salvo localmente, verifica se já existe no banco
-  const nomeSalvo = localStorage.getItem('bolao_kebolets_nome');
-  if (nome !== nomeSalvo) {
-    const { data } = await sb.from('palpites').select('nome').ilike('nome', nome).limit(1);
-    if (data && data.length > 0 && data[0].nome.toUpperCase() !== nomeSalvo?.toUpperCase()) {
-      showToast('Este nome já está em uso. Escolha outro.');
-      return;
+  if (!nome) { showToast('Digite seu nome para continuar.'); return; }
+  if (!senha) { showToast('Digite sua senha para continuar.'); return; }
+
+  // Busca usuário no banco
+  const { data: usuario } = await sb.from('usuarios').select('nome, senha').ilike('nome', nome).limit(1);
+
+  if (usuario && usuario.length > 0) {
+    const u = usuario[0];
+    if (!u.senha) {
+      // Usuário existente sem senha — cadastra a senha agora
+      const { error } = await sb.from('usuarios').update({ senha }).eq('nome', u.nome);
+      if (error) { showToast('Erro ao cadastrar senha.'); return; }
+      showToast('Senha cadastrada com sucesso!');
+    } else {
+      // Usuário existente com senha — valida
+      if (u.senha !== senha) { showToast('Senha incorreta.'); return; }
+    }
+  } else {
+    // Usuário novo — verifica se nome já existe em palpites
+    const { data: palpiteExistente } = await sb.from('palpites').select('nome').ilike('nome', nome).limit(1);
+    if (palpiteExistente && palpiteExistente.length > 0) {
+      // Nome existe em palpites mas não em usuarios — usuário antigo, pede para criar senha
+      const { error } = await sb.from('usuarios').insert({ nome, senha });
+      if (error) { showToast('Erro ao cadastrar. Tente novamente.'); return; }
+      showToast('Bem-vindo de volta! Senha cadastrada.');
+    } else {
+      // Usuário completamente novo
+      const { error } = await sb.from('usuarios').insert({ nome, senha });
+      if (error) { showToast('Erro ao cadastrar. Tente novamente.'); return; }
     }
   }
 
