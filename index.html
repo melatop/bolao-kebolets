@@ -315,43 +315,35 @@ function renderGames() {
   const section = document.getElementById('games-section');
   const today = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' });
 
-  if (!todayGames.length) {
-    section.innerHTML = `<div class="empty-day"><strong>Sem jogos hoje</strong>Não há partidas programadas para hoje. Volte amanhã!</div>`;
-    section.style.display = 'block';
-  } else {    let html = `<div class="day-label">Jogos de hoje — ${today}</div>`;
-    for (const g of todayGames) {
-      const locked = isLocked(g);
-      const saved = savedGuesses[g.id];
-      const prevH = document.getElementById('h-' + g.id);
-      const prevA = document.getElementById('a-' + g.id);
-      const hVal = saved ? saved.home_score : (prevH ? prevH.value : '0');
-      const aVal = saved ? saved.away_score : (prevA ? prevA.value : '0');
-      const timeLabel = formatKickoffBRT(g.kickoff_utc);
+  const jogosAbertos = todayGames.filter(g => !isLocked(g));
+  const jogosEmAndamento = todayGames.filter(g => isLocked(g));
+
+  let html = '';
+
+  // SEÇÃO 1: Jogos em andamento (com preview de palpites)
+  if (jogosEmAndamento.length) {
+    html += `<div class="day-label" style="margin-top:4px;">Em andamento</div>`;
+    for (const g of jogosEmAndamento) {
+      const palpites = todosPalpites[g.id] || [];
       html += `
         <div class="match-card">
           <div class="match-meta">
-            <span class="match-time">${timeLabel}</span>
+            <span class="match-time">${formatKickoffBRT(g.kickoff_utc)}</span>
             <span class="match-group">${g.grupo}</span>
           </div>
           <div class="match-body">
             <div class="team"><span class="team-flag">${g.home_flag}</span><span class="team-name">${g.home_name}</span></div>
             <div class="score-inputs">
-              <input class="score-input" type="number" min="0" max="20" step="1" id="h-${g.id}" value="${hVal}" ${locked ? 'disabled' : ''} oninput="onEditPalpite('${g.id}')">
+              <input class="score-input" type="number" min="0" max="20" disabled id="h-${g.id}" value="${savedGuesses[g.id]?.home_score ?? '0'}">
               <span class="score-sep">×</span>
-              <input class="score-input" type="number" min="0" max="20" step="1" id="a-${g.id}" value="${aVal}" ${locked ? 'disabled' : ''} oninput="onEditPalpite('${g.id}')">
+              <input class="score-input" type="number" min="0" max="20" disabled id="a-${g.id}" value="${savedGuesses[g.id]?.away_score ?? '0'}">
             </div>
             <div class="team"><span class="team-flag">${g.away_flag}</span><span class="team-name">${g.away_name}</span></div>
           </div>
-          <div class="match-footer">
-            ${locked
-              ? `<span style="font-size:11px;color:var(--gold-dark);font-weight:600;">Palpite encerrado</span>`
-              : `<span class="saved-confirm" id="saved-${g.id}" style="font-size:11px;color:var(--green);font-weight:600;visibility:${saved ? 'visible' : 'hidden'};">✓ Palpite salvo</span>`
-            }
-          </div>
-          ${locked && todosPalpites[g.id]?.length ? `
+          ${palpites.length ? `
           <div class="preview-section">
             <div class="preview-title">Palpites</div>
-            ${todosPalpites[g.id].map(p => `
+            ${palpites.map(p => `
               <div class="preview-row">
                 <span class="preview-nome${p.nome === currentUser ? ' me' : ''}">${p.nome === currentUser ? '→ ' : ''}${p.nome}</span>
                 <span class="preview-score">${p.home_score} × ${p.away_score}</span>
@@ -359,16 +351,50 @@ function renderGames() {
           </div>` : ''}
         </div>`;
     }
-    section.innerHTML = html;
-    section.style.display = 'block';
-    // Aplica twemoji apenas nas bandeiras, não no texto do footer
-    section.querySelectorAll('.team-flag').forEach(el => {
-      twemoji.parse(el, { folder: 'svg', ext: '.svg' });
-    });
   }
 
-  const temAbertos = todayGames.some(g => !isLocked(g));
-  if (temAbertos) section.innerHTML += `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;opacity:0.4;cursor:not-allowed;" disabled onclick="salvarTodos()">Salvar</button>`;
+  // SEÇÃO 2: Palpites do dia (jogos ainda abertos)
+  if (jogosAbertos.length) {
+    html += `<div class="day-label" style="margin-top:${jogosEmAndamento.length ? '1rem' : '4px'};">Palpites do dia — ${today}</div>`;
+    for (const g of jogosAbertos) {
+      const saved = savedGuesses[g.id];
+      const prevH = document.getElementById('h-' + g.id);
+      const prevA = document.getElementById('a-' + g.id);
+      const hVal = saved ? saved.home_score : (prevH ? prevH.value : '0');
+      const aVal = saved ? saved.away_score : (prevA ? prevA.value : '0');
+      html += `
+        <div class="match-card">
+          <div class="match-meta">
+            <span class="match-time">${formatKickoffBRT(g.kickoff_utc)}</span>
+            <span class="match-group">${g.grupo}</span>
+          </div>
+          <div class="match-body">
+            <div class="team"><span class="team-flag">${g.home_flag}</span><span class="team-name">${g.home_name}</span></div>
+            <div class="score-inputs">
+              <input class="score-input" type="number" min="0" max="20" step="1" id="h-${g.id}" value="${hVal}" oninput="onEditPalpite('${g.id}')">
+              <span class="score-sep">×</span>
+              <input class="score-input" type="number" min="0" max="20" step="1" id="a-${g.id}" value="${aVal}" oninput="onEditPalpite('${g.id}')">
+            </div>
+            <div class="team"><span class="team-flag">${g.away_flag}</span><span class="team-name">${g.away_name}</span></div>
+          </div>
+          <div class="match-footer">
+            <span class="saved-confirm" id="saved-${g.id}" style="font-size:11px;color:var(--green);font-weight:600;visibility:${saved ? 'visible' : 'hidden'};">✓ Palpite salvo</span>
+          </div>
+        </div>`;
+    }
+  }
+
+  if (!html) {
+    html = `<div class="empty-day"><strong>Sem jogos hoje</strong>Não há partidas programadas para hoje. Volte amanhã!</div>`;
+  }
+
+  section.innerHTML = html;
+  section.style.display = 'block';
+  section.querySelectorAll('.team-flag').forEach(el => {
+    twemoji.parse(el, { folder: 'svg', ext: '.svg' });
+  });
+
+  if (jogosAbertos.length) section.innerHTML += `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;opacity:0.4;cursor:not-allowed;" disabled onclick="salvarTodos()">Salvar</button>`;
   if (rankingVisible) document.getElementById('ranking-section').style.display = 'block';
   if (placaresVisible) { document.getElementById('placares-section').style.display = 'block'; renderPlacares(); }
 }
@@ -419,31 +445,27 @@ function placarRowHtml(g, resultados) {
 async function renderPlacares() {
   const resultados = await fetchResultados();
   const contentEl = document.getElementById('placares-content');
-  if (!todayGames.length && !yesterdayGames.length) { contentEl.innerHTML = ''; return; }
 
-  const temAoVivo = todayGames.some(g => isLocked(g) && resultados[g.id] && !resultados[g.id].finalizado);
+  // Jogos de hoje finalizados
+  const finalizados = todayGames.filter(g => resultados[g.id]?.finalizado);
+  // Jogos de hoje em andamento (sem resultado final ainda)
+  const emAndamento = todayGames.filter(g => isLocked(g) && (!resultados[g.id] || !resultados[g.id].finalizado));
 
-  let html = `
-    <div class="ranking-header" style="margin-top:1.25rem;">
-      <span class="ranking-title">📊 Placares do dia</span>
-      ${temAoVivo ? '<span style="font-size:11px;background:#fee2e2;color:#dc2626;font-weight:700;padding:3px 10px;border-radius:20px;">🔴 Ao vivo</span>' : ''}
-    </div>
-    <div class="placares-card">`;
+  let html = '';
 
-  for (const g of todayGames) {
-    html += placarRowHtml(g, resultados);
+  if (finalizados.length || emAndamento.length || yesterdayGames.length) {
+    html += `<div class="ranking-header" style="margin-top:1.25rem;"><span class="ranking-title">📊 Placares do dia</span></div><div class="placares-card">`;
+    for (const g of [...emAndamento, ...finalizados]) {
+      html += placarRowHtml(g, resultados);
+    }
+    html += `</div>`;
   }
-  html += `</div>`;
 
   if (yesterdayGames.length) {
     const ontem = new Date();
     ontem.setDate(ontem.getDate() - 1);
     const ontemLabel = ontem.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' });
-    html += `
-      <div class="ranking-header" style="margin-top:1.25rem;">
-        <span class="ranking-title" style="font-size:14px;color:var(--gray-400);">Últimos jogos — ${ontemLabel}</span>
-      </div>
-      <div class="placares-card">`;
+    html += `<div class="ranking-header" style="margin-top:1.25rem;"><span class="ranking-title" style="font-size:14px;color:var(--gray-400);">Últimos jogos — ${ontemLabel}</span></div><div class="placares-card">`;
     for (const g of yesterdayGames) {
       html += placarRowHtml(g, resultados);
     }
