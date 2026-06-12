@@ -756,6 +756,7 @@ async function confirmarRename() {
 
 function trocarUsuario() {
   localStorage.removeItem('bolao_kebolets_nome');
+  localStorage.removeItem('bolao_kebolets_pw');
   const input = document.getElementById('name-input');
   input.value = '';
   input.removeAttribute('readonly');
@@ -827,6 +828,7 @@ async function enterWithName() {
 
   currentUser = nome;
   localStorage.setItem('bolao_kebolets_nome', nome);
+  localStorage.setItem('bolao_kebolets_pw', document.getElementById('pw-input').value.trim());
   document.getElementById('name-section').style.display = 'none';
   document.getElementById('loading-games').style.display = 'block';
 
@@ -882,6 +884,7 @@ function sair() {
   rankingVisible = true;
   placaresVisible = true;
   localStorage.removeItem('bolao_kebolets_nome');
+  localStorage.removeItem('bolao_kebolets_pw');
   savedGuesses = {};
   todayGames = [];
   yesterdayGames = [];
@@ -909,6 +912,7 @@ function sair() {
 window.addEventListener('load', () => {
   initDateLabel();
   const nomeSalvo = localStorage.getItem('bolao_kebolets_nome');
+  const pwSalvo = localStorage.getItem('bolao_kebolets_pw');
   if (nomeSalvo) {
     const nomeUpper = nomeSalvo.toUpperCase();
     localStorage.setItem('bolao_kebolets_nome', nomeUpper);
@@ -920,6 +924,11 @@ window.addEventListener('load', () => {
     input.style.fontWeight = '700';
     document.getElementById('not-me-btn').style.display = 'inline-block';
     document.getElementById('login-hint').textContent = 'Digite sua senha para entrar.';
+    // Auto-login se senha também estiver salva
+    if (pwSalvo) {
+      document.getElementById('pw-input').value = pwSalvo;
+      enterWithName();
+    }
   }
 });
 </script>
