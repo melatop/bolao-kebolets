@@ -53,6 +53,7 @@
 <header>
   <div class="header-title">⚙️ Admin — Bolão Kebolets</div>
   <div class="header-sub">Inserir resultados dos jogos</div>
+  <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px;">⚠️ Use apenas quando a API não atualizar automaticamente</div>
 </header>
 <main>
   <div id="login-section">
@@ -114,6 +115,7 @@ function renderAdmin() {
 
   if (semResultado.length) {
     html += `<div class="section-label">Aguardando resultado</div>`;
+    html += `<div style="font-size:12px;color:var(--gray-400);margin-bottom:10px;line-height:1.5;">Os resultados são atualizados automaticamente via API a cada minuto. Use os campos abaixo apenas se a API falhar em atualizar um jogo.</div>`;
     for (const g of semResultado) {
       html += gameCardHtml(g, null);
     }
