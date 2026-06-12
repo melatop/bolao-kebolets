@@ -493,6 +493,17 @@ async function enterWithName() {
   const input = document.getElementById('name-input');
   const nome = input.value.trim().toUpperCase();
   if (!nome) { showToast('Digite seu nome para continuar.'); return; }
+
+  // Se nome diferente do salvo localmente, verifica se já existe no banco
+  const nomeSalvo = localStorage.getItem('bolao_kebolets_nome');
+  if (nome !== nomeSalvo) {
+    const { data } = await sb.from('palpites').select('nome').ilike('nome', nome).limit(1);
+    if (data && data.length > 0 && data[0].nome.toUpperCase() !== nomeSalvo?.toUpperCase()) {
+      showToast('Este nome já está em uso. Escolha outro.');
+      return;
+    }
+  }
+
   currentUser = nome;
   localStorage.setItem('bolao_kebolets_nome', nome);
   document.getElementById('name-section').style.display = 'none';
