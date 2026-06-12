@@ -265,13 +265,14 @@ async function renderRanking() {
   const pontos = {}, acertos = {}, cravados = {};
 
   for (const p of todos) {
-    if (OCULTOS.includes(p.nome.toUpperCase().trim())) continue;
-    if (!pontos[p.nome]) { pontos[p.nome] = 0; acertos[p.nome] = 0; cravados[p.nome] = 0; }
+    const nome = p.nome.toUpperCase().trim();
+    if (OCULTOS.includes(nome)) continue;
+    if (!pontos[nome]) { pontos[nome] = 0; acertos[nome] = 0; cravados[nome] = 0; }
     const pts = calcPoints(p, resultados[p.game_id]);
     if (pts !== null) {
-      pontos[p.nome] += pts;
-      if (pts >= 1) acertos[p.nome]++;
-      if (pts === 3) cravados[p.nome]++;
+      pontos[nome] += pts;
+      if (pts >= 1) acertos[nome]++;
+      if (pts === 3) cravados[nome]++;
     }
   }
 
@@ -295,12 +296,12 @@ async function renderRanking() {
       </div>`;
 
   ranking.forEach((r, i) => {
-    const isMe = r.nome === currentUser;
+    const isMe = r.nome.toUpperCase() === currentUser;
     const rowClass = isMe ? 'ranking-row me' : i === 0 ? 'ranking-row top1' : 'ranking-row';
     html += `
       <div class="${rowClass}">
         <div class="pos">${posIcons[i] || (i + 1)}</div>
-        <div class="rk-name${isMe ? ' me-label' : ''}">${r.nome}</div>
+        <div class="rk-name${isMe ? ' me-label' : ''}">${r.nome.toUpperCase()}</div>
         <div class="rk-col"><span class="rk-pts">${r.pts}</span></div>
         <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.acertos}</div>
         <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.cravados}</div>
@@ -345,7 +346,7 @@ function renderGames() {
             <div class="preview-title">Palpites</div>
             ${palpites.map(p => `
               <div class="preview-row">
-                <span class="preview-nome${p.nome === currentUser ? ' me' : ''}">${p.nome === currentUser ? '→ ' : ''}${p.nome}</span>
+                <span class="preview-nome${p.nome.toUpperCase() === currentUser ? ' me' : ''}">${p.nome.toUpperCase() === currentUser ? '→ ' : ''}${p.nome.toUpperCase()}</span>
                 <span class="preview-score">${p.home_score} × ${p.away_score}</span>
               </div>`).join('')}
           </div>` : ''}
