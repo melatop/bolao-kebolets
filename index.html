@@ -464,12 +464,11 @@ function sair() {
   document.getElementById('name-input').value = '';
 }
 
-window.addEventListener('load', async () => {
+window.addEventListener('load', () => {
   initDateLabel();
   const nomeSalvo = localStorage.getItem('bolao_kebolets_nome');
   if (nomeSalvo) {
     document.getElementById('name-input').value = nomeSalvo;
-    await enterWithName();
   }
 });
 </script>
