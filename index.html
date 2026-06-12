@@ -357,17 +357,24 @@ async function renderHistorico() {
   const jogosMap = {};
   if (jogos) jogos.forEach(g => { jogosMap[g.id] = g; });
 
-  // Ordena por kickoff_utc descendente
+  // Ordena por kickoff_utc descendente e filtra só jogos com resultado final
   palpites.sort((a, b) => {
     const ga = jogosMap[a.game_id], gb = jogosMap[b.game_id];
     if (!ga || !gb) return 0;
     return new Date(gb.kickoff_utc) - new Date(ga.kickoff_utc);
   });
 
+  const palpitesFinalizados = palpites.filter(p => resultados[p.game_id]?.finalizado);
+
+  if (!palpitesFinalizados.length) {
+    contentEl.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--gray-400);font-size:14px;">Nenhum jogo finalizado ainda.</div>';
+    return;
+  }
+
   let totalPts = 0;
   let html = `<div class="historico-card">`;
 
-  for (const p of palpites) {
+  for (const p of palpitesFinalizados) {
     const g = jogosMap[p.game_id];
     if (!g) continue;
     const res = resultados[p.game_id];
