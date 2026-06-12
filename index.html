@@ -163,7 +163,7 @@
     <div id="loading-ranking" style="display:none;">Calculando ranking...</div>
     <div id="ranking-content"></div>
   </div>
-  <div id="historico-section">
+  <div id="historico-section" style="display:none;">
     <button class="btn-ranking" id="btn-historico" onclick="toggleHistorico()" style="margin-top:8px;">📋 Meu histórico</button>
     <div id="historico-content"></div>
   </div>
@@ -790,6 +790,7 @@ async function enterWithName() {
   renderGames();
   document.getElementById('ranking-section').style.display = 'block';
   document.getElementById('placares-section').style.display = 'block';
+  document.getElementById('historico-section').style.display = 'block';
   try { await Promise.race([renderRanking(), timeout(8000)]); } catch(e) { console.error(e); }
   try { await Promise.race([renderPlacares(), timeout(8000)]); } catch(e) { console.error(e); }
 }
@@ -832,6 +833,7 @@ function sair() {
   document.getElementById('games-section').innerHTML = '';
   document.getElementById('ranking-section').style.display = 'none';
   document.getElementById('placares-section').style.display = 'none';
+  document.getElementById('historico-section').style.display = 'none';
   document.getElementById('historico-content').innerHTML = '';
   document.getElementById('btn-historico') && (document.getElementById('btn-historico').textContent = '📋 Meu histórico');
   document.getElementById('btn-historico') && document.getElementById('btn-historico').classList.remove('active');
