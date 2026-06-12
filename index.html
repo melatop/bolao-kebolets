@@ -220,6 +220,7 @@ async function renderRanking() {
   }
 
   const resultados = await fetchResultados();
+  const temAoVivoRanking = Object.values(resultados).some((r: any) => !r.finalizado);
   const OCULTOS = ['test'];
   const pontos = {}, acertos = {}, cravados = {};
 
@@ -243,7 +244,7 @@ async function renderRanking() {
   let html = `
     <div class="ranking-header">
       <span class="ranking-title">🏆 Ranking Kebolets</span>
-      <span class="ranking-sub">Copa 2026</span>
+      <span class="ranking-sub">${temAoVivoRanking ? '<span style="background:#fff7ed;color:#c2410c;font-weight:700;padding:3px 10px;border-radius:20px;font-size:11px;">prévia</span>' : 'Copa 2026'}</span>
     </div>
     <div class="ranking-card">
       <div class="ranking-legend">
@@ -352,18 +353,23 @@ async function renderPlacares() {
   const contentEl = document.getElementById('placares-content');
   if (!todayGames.length) { contentEl.innerHTML = ''; return; }
 
+  const temAoVivo = todayGames.some(g => isLocked(g) && resultados[g.id] && !resultados[g.id].finalizado);
+
   let html = `
     <div class="ranking-header" style="margin-top:1.25rem;">
       <span class="ranking-title">📊 Placares do dia</span>
+      ${temAoVivo ? '<span style="font-size:11px;background:#fee2e2;color:#dc2626;font-weight:700;padding:3px 10px;border-radius:20px;">🔴 Ao vivo</span>' : ''}
     </div>
     <div class="placares-card">`;
 
   for (const g of todayGames) {
     const res = resultados[g.id];
     const locked = isLocked(g);
+    const aoVivo = locked && res && !res.finalizado;
+    const finalizado = res && res.finalizado;
     let scoreHtml = '';
     if (res) {
-      scoreHtml = `<div class="placar-score">${res.home_score} <span style="color:var(--gray-400);font-size:14px;">×</span> ${res.away_score}</div>`;
+      scoreHtml = `<div class="placar-score" style="${aoVivo ? 'color:#dc2626;' : ''}">${res.home_score} <span style="color:var(--gray-400);font-size:14px;">×</span> ${res.away_score}</div>`;
     } else if (locked) {
       scoreHtml = `<div class="placar-score pending">em andamento</div>`;
     } else {
