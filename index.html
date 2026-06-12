@@ -144,6 +144,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser = null;
 let todayGames = [];
+let yesterdayGames = [];
 let savedGuesses = {};
 let rankingVisible = true;
 let placaresVisible = true;
@@ -174,9 +175,21 @@ async function fetchTodayGames() {
   const mo = String(brt.getMonth() + 1).padStart(2, '0');
   const dy = String(brt.getDate()).padStart(2, '0');
   const dateKey = mo + dy;
+
+  // Dia anterior
+  const yesterday = new Date(brt);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const moY = String(yesterday.getMonth() + 1).padStart(2, '0');
+  const dyY = String(yesterday.getDate()).padStart(2, '0');
+  const dateKeyY = moY + dyY;
+
   const { data, error } = await sb.from('jogos').select('*').order('kickoff_utc', { ascending: true });
-  if (error) { console.error(error); return []; }
-  return (data || []).filter(g => g.id.endsWith(dateKey));
+  if (error) { console.error(error); return { today: [], yesterday: [] }; }
+  const all = data || [];
+  return {
+    today: all.filter(g => g.id.endsWith(dateKey)),
+    yesterday: all.filter(g => g.id.endsWith(dateKeyY))
+  };
 }
 
 async function loadGuesses(nome) {
@@ -278,8 +291,7 @@ function renderGames() {
   if (!todayGames.length) {
     section.innerHTML = `<div class="empty-day"><strong>Sem jogos hoje</strong>Não há partidas programadas para hoje. Volte amanhã!</div>`;
     section.style.display = 'block';
-  } else {
-    let html = `<div class="day-label">Jogos de hoje — ${today}</div>`;
+  } else {    let html = `<div class="day-label">Jogos de hoje — ${today}</div>`;
     for (const g of todayGames) {
       const locked = isLocked(g);
       const saved = savedGuesses[g.id];
@@ -348,10 +360,30 @@ async function togglePlacares() {
   }
 }
 
+function placarRowHtml(g, resultados) {
+  const res = resultados[g.id];
+  const locked = isLocked(g);
+  const aoVivo = locked && res && !res.finalizado;
+  let scoreHtml = '';
+  if (res) {
+    scoreHtml = `<div class="placar-score" style="${aoVivo ? 'color:#dc2626;' : ''}">${res.home_score} <span style="color:var(--gray-400);font-size:14px;">×</span> ${res.away_score}</div>`;
+  } else if (locked) {
+    scoreHtml = `<div class="placar-score pending">em andamento</div>`;
+  } else {
+    scoreHtml = `<div class="placar-score pending">${formatKickoffBRT(g.kickoff_utc)}</div>`;
+  }
+  return `
+    <div class="placar-row">
+      <div class="placar-team"><span class="placar-flag">${g.home_flag}</span>${g.home_name}</div>
+      ${scoreHtml}
+      <div class="placar-team away"><span class="placar-flag">${g.away_flag}</span>${g.away_name}</div>
+    </div>`;
+}
+
 async function renderPlacares() {
   const resultados = await fetchResultados();
   const contentEl = document.getElementById('placares-content');
-  if (!todayGames.length) { contentEl.innerHTML = ''; return; }
+  if (!todayGames.length && !yesterdayGames.length) { contentEl.innerHTML = ''; return; }
 
   const temAoVivo = todayGames.some(g => isLocked(g) && resultados[g.id] && !resultados[g.id].finalizado);
 
@@ -363,34 +395,25 @@ async function renderPlacares() {
     <div class="placares-card">`;
 
   for (const g of todayGames) {
-    const res = resultados[g.id];
-    const locked = isLocked(g);
-    const aoVivo = locked && res && !res.finalizado;
-    const finalizado = res && res.finalizado;
-    let scoreHtml = '';
-    if (res) {
-      scoreHtml = `<div class="placar-score" style="${aoVivo ? 'color:#dc2626;' : ''}">${res.home_score} <span style="color:var(--gray-400);font-size:14px;">×</span> ${res.away_score}</div>`;
-    } else if (locked) {
-      scoreHtml = `<div class="placar-score pending">em andamento</div>`;
-    } else {
-      scoreHtml = `<div class="placar-score pending">${formatKickoffBRT(g.kickoff_utc)}</div>`;
-    }
+    html += placarRowHtml(g, resultados);
+  }
+  html += `</div>`;
 
+  if (yesterdayGames.length) {
+    const ontem = new Date();
+    ontem.setDate(ontem.getDate() - 1);
+    const ontemLabel = ontem.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' });
     html += `
-      <div class="placar-row">
-        <div class="placar-team">
-          <span class="placar-flag">${g.home_flag}</span>
-          ${g.home_name}
-        </div>
-        ${scoreHtml}
-        <div class="placar-team away">
-          <span class="placar-flag">${g.away_flag}</span>
-          ${g.away_name}
-        </div>
-      </div>`;
+      <div class="ranking-header" style="margin-top:1.25rem;">
+        <span class="ranking-title" style="font-size:14px;color:var(--gray-400);">Últimos jogos — ${ontemLabel}</span>
+      </div>
+      <div class="placares-card">`;
+    for (const g of yesterdayGames) {
+      html += placarRowHtml(g, resultados);
+    }
+    html += `</div>`;
   }
 
-  html += `</div>`;
   contentEl.innerHTML = html;
   contentEl.querySelectorAll('.placar-flag').forEach(el => {
     twemoji.parse(el, { folder: 'svg', ext: '.svg' });
@@ -408,7 +431,11 @@ async function enterWithName() {
 
   const timeout = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms));
 
-  try { todayGames = await Promise.race([fetchTodayGames(), timeout(8000)]); } catch(e) { console.error(e); todayGames = []; }
+  try {
+    const result = await Promise.race([fetchTodayGames(), timeout(8000)]);
+    todayGames = result.today || [];
+    yesterdayGames = result.yesterday || [];
+  } catch(e) { console.error(e); todayGames = []; yesterdayGames = []; }
   try { await Promise.race([loadGuesses(nome), timeout(5000)]); } catch(e) { console.error(e); }
 
   const initials = nome.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
@@ -455,6 +482,7 @@ function sair() {
   localStorage.removeItem('bolao_kebolets_nome');
   savedGuesses = {};
   todayGames = [];
+  yesterdayGames = [];
   document.getElementById('user-bar').style.display = 'none';
   document.getElementById('games-section').style.display = 'none';
   document.getElementById('games-section').innerHTML = '';
