@@ -446,23 +446,33 @@ async function renderPlacares() {
   const resultados = await fetchResultados();
   const contentEl = document.getElementById('placares-content');
 
-  // Jogos de hoje finalizados
-  const finalizados = todayGames.filter(g => resultados[g.id]?.finalizado);
-  // Jogos de hoje em andamento (sem resultado final ainda)
-  const emAndamento = todayGames.filter(g => isLocked(g) && (!resultados[g.id] || !resultados[g.id].finalizado));
+  // todayGames tem só os abertos; yesterdayGames tem só finalizados de ontem
+  // Precisamos de TODOS os jogos de hoje (abertos + encerrados)
+  const now = new Date();
+  const brt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  const mo = String(brt.getMonth() + 1).padStart(2, '0');
+  const dy = String(brt.getDate()).padStart(2, '0');
+  const dateKey = mo + dy;
+
+  const { data } = await sb.from('jogos').select('*').order('kickoff_utc', { ascending: true });
+  const todosHoje = (data || []).filter(g => g.id.endsWith(dateKey));
+
+  // Jogos de hoje: abertos, em andamento e finalizados
+  const abertos = todosHoje.filter(g => !isLocked(g));
+  const encerrados = todosHoje.filter(g => isLocked(g));
 
   let html = '';
 
-  if (finalizados.length || emAndamento.length || yesterdayGames.length) {
+  if (todosHoje.length) {
     html += `<div class="ranking-header" style="margin-top:1.25rem;"><span class="ranking-title">📊 Placares do dia</span></div><div class="placares-card">`;
-    for (const g of [...emAndamento, ...finalizados]) {
+    for (const g of todosHoje) {
       html += placarRowHtml(g, resultados);
     }
     html += `</div>`;
   }
 
   if (yesterdayGames.length) {
-    const ontem = new Date();
+    const ontem = new Date(brt);
     ontem.setDate(ontem.getDate() - 1);
     const ontemLabel = ontem.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' });
     html += `<div class="ranking-header" style="margin-top:1.25rem;"><span class="ranking-title" style="font-size:14px;color:var(--gray-400);">Últimos jogos — ${ontemLabel}</span></div><div class="placares-card">`;
