@@ -271,10 +271,20 @@ async function fetchTodosPalpites() {
   const { data } = await sb.from('palpites').select('nome,game_id,home_score,away_score').in('game_id', ids);
   if (!data) return;
   const OCULTOS = ['TEST'];
+  // Usa só o palpite mais recente por nome+jogo (em uppercase)
+  const seen = {}; // "NOME-game_id" -> index
   for (const p of data) {
-    if (OCULTOS.includes(p.nome.toUpperCase().trim())) continue;
+    const nomeUpper = p.nome.toUpperCase().trim();
+    if (OCULTOS.includes(nomeUpper)) continue;
+    const key = `${nomeUpper}-${p.game_id}`;
     if (!todosPalpites[p.game_id]) todosPalpites[p.game_id] = [];
-    todosPalpites[p.game_id].push(p);
+    if (seen[key] !== undefined) {
+      // Substitui o anterior
+      todosPalpites[p.game_id][seen[key]] = { ...p, nome: nomeUpper };
+    } else {
+      seen[key] = todosPalpites[p.game_id].length;
+      todosPalpites[p.game_id].push({ ...p, nome: nomeUpper });
+    }
   }
 }
 async function fetchResultados() {
