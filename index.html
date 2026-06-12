@@ -32,7 +32,8 @@
   .name-row input:focus { border-color: var(--green); }
   .btn-enter { background: var(--green); color: var(--white); border: none; border-radius: var(--radius-sm); padding: 9px 20px; font-size: 14px; font-weight: 600; font-family: 'Barlow', sans-serif; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
   .btn-enter:hover { background: var(--green-dark); }
-  #user-bar { display: none; align-items: center; gap: 10px; background: var(--white); border-radius: var(--radius-sm); border: 1px solid var(--gray-200); padding: 8px 14px; margin-bottom: 1.25rem; }
+  #rename-section { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 1.5rem; margin-bottom: 1.5rem; text-align: center; }
+  #rename-section h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; color: var(--green); text-transform: uppercase; margin-bottom: 6px; } gap: 10px; background: var(--white); border-radius: var(--radius-sm); border: 1px solid var(--gray-200); padding: 8px 14px; margin-bottom: 1.25rem; }
   .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--green); color: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; flex-shrink: 0; }
   #user-bar .uname { font-size: 14px; font-weight: 600; flex: 1; color: var(--gray-900); }
   .btn-sair { font-size: 12px; color: var(--gray-400); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; font-family: 'Barlow', sans-serif; }
@@ -123,6 +124,15 @@
       <input type="text" id="name-input" placeholder="Seu nome" maxlength="40" style="width:100%;max-width:320px;margin:0 auto;" onkeydown="if(event.key==='Enter')document.getElementById('pw-input').focus()" />
       <input type="password" id="pw-input" placeholder="Senha" maxlength="40" style="width:100%;max-width:320px;margin:0 auto;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-size:15px;font-family:'Barlow',sans-serif;color:var(--gray-900);background:var(--gray-50);outline:none;" onkeydown="if(event.key==='Enter')enterWithName()" />
       <button class="btn-enter" onclick="enterWithName()" style="width:100%;max-width:320px;margin:0 auto;">Entrar</button>
+    </div>
+  </div>
+
+  <div id="rename-section" style="display:none;">
+    <h2>Atualize seu nome</h2>
+    <p style="font-size:13px;color:var(--gray-400);margin-bottom:1rem;line-height:1.5;">Seu nome atual (<strong id="rename-old"></strong>) contém espaço ou símbolo.<br>Escolha um novo nome com apenas letras e números.</p>
+    <div class="name-row" style="flex-direction:column;gap:8px;">
+      <input type="text" id="rename-input" placeholder="Novo nome (ex: LucasAlves)" maxlength="40" style="width:100%;max-width:320px;margin:0 auto;" onkeydown="if(event.key==='Enter')confirmarRename()" />
+      <button class="btn-enter" onclick="confirmarRename()" style="width:100%;max-width:320px;margin:0 auto;">Confirmar</button>
     </div>
   </div>
   <div id="user-bar">
@@ -490,6 +500,42 @@ async function renderPlacares() {
   });
 }
 
+async function confirmarRename() {
+  const novoNome = document.getElementById('rename-input').value.trim().toUpperCase();
+  if (!novoNome) { showToast('Digite o novo nome.'); return; }
+  if (!/^[A-Z0-9]+$/.test(novoNome)) { showToast('Use apenas letras e números, sem espaços ou símbolos.'); return; }
+
+  const oldName = window._renameOldName;
+  const senha = window._renameSenha;
+
+  // Verifica se novo nome já existe
+  const { data: existe } = await sb.from('palpites').select('nome').ilike('nome', novoNome).limit(1);
+  if (existe && existe.length > 0) { showToast('Este nome já está em uso. Escolha outro.'); return; }
+
+  const btn = document.querySelector('[onclick="confirmarRename()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+
+  // Migra palpites
+  await sb.from('palpites').update({ nome: novoNome }).ilike('nome', oldName);
+
+  // Migra ou cria usuário
+  const { data: usuarioAntigo } = await sb.from('usuarios').select('nome').ilike('nome', oldName).limit(1);
+  if (usuarioAntigo && usuarioAntigo.length > 0) {
+    await sb.from('usuarios').update({ nome: novoNome, senha }).ilike('nome', oldName);
+  } else {
+    await sb.from('usuarios').insert({ nome: novoNome, senha });
+  }
+
+  if (btn) { btn.disabled = false; btn.textContent = 'Confirmar'; }
+  showToast('Nome atualizado! Entrando...');
+  document.getElementById('rename-section').style.display = 'none';
+
+  // Entra com novo nome
+  document.getElementById('name-input').value = novoNome;
+  document.getElementById('pw-input').value = senha;
+  await enterWithName();
+}
+
 async function enterWithName() {
   const input = document.getElementById('name-input');
   const pwInput = document.getElementById('pw-input');
@@ -497,8 +543,27 @@ async function enterWithName() {
   const senha = pwInput ? pwInput.value.trim() : '';
 
   if (!nome) { showToast('Digite seu nome para continuar.'); return; }
-  if (!/^[A-Z0-9]+$/.test(nome)) { showToast('Use apenas letras e números, sem espaços ou símbolos.'); return; }
   if (!senha) { showToast('Digite sua senha para continuar.'); return; }
+
+  // Se nome tem espaço/símbolo, verifica se existe no banco (usuário antigo)
+  if (!/^[A-Z0-9]+$/.test(nome)) {
+    const { data: palpiteAntigo } = await sb.from('palpites').select('nome').ilike('nome', nome).limit(1);
+    if (palpiteAntigo && palpiteAntigo.length > 0) {
+      // Usuário antigo com nome inválido — verifica senha e abre tela de rename
+      const { data: usuarioAntigo } = await sb.from('usuarios').select('nome, senha').ilike('nome', nome).limit(1);
+      if (usuarioAntigo && usuarioAntigo.length > 0 && usuarioAntigo[0].senha && usuarioAntigo[0].senha !== senha) {
+        showToast('Senha incorreta.'); return;
+      }
+      // Guarda temporariamente para migrar depois
+      window._renameOldName = nome;
+      window._renameSenha = senha;
+      document.getElementById('name-section').style.display = 'none';
+      document.getElementById('rename-section').style.display = 'block';
+      document.getElementById('rename-old').textContent = nome;
+      return;
+    }
+    showToast('Use apenas letras e números, sem espaços ou símbolos.'); return;
+  }
 
   // Busca usuário no banco
   const { data: usuario } = await sb.from('usuarios').select('nome, senha').ilike('nome', nome).limit(1);
@@ -594,6 +659,7 @@ function sair() {
   document.getElementById('games-section').innerHTML = '';
   document.getElementById('ranking-section').style.display = 'none';
   document.getElementById('placares-section').style.display = 'none';
+  document.getElementById('rename-section').style.display = 'none';
   document.getElementById('name-section').style.display = 'block';
   document.getElementById('name-input').value = '';
 }
