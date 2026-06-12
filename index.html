@@ -193,9 +193,16 @@ async function fetchTodayGames() {
   const { data, error } = await sb.from('jogos').select('*').order('kickoff_utc', { ascending: true });
   if (error) { console.error(error); return { today: [], yesterday: [] }; }
   const all = data || [];
+  const tod = all.filter(g => g.id.endsWith(dateKey));
+  const yest = all.filter(g => g.id.endsWith(dateKeyY));
+
+  // Jogos de ontem sem resultado final também entram em todayGames
+  const resultados = await fetchResultados();
+  const yesterdayNoResult = yest.filter(g => !resultados[g.id] || !resultados[g.id].finalizado);
+
   return {
-    today: all.filter(g => g.id.endsWith(dateKey)),
-    yesterday: all.filter(g => g.id.endsWith(dateKeyY))
+    today: [...yesterdayNoResult, ...tod],
+    yesterday: yest.filter(g => resultados[g.id]?.finalizado)
   };
 }
 
