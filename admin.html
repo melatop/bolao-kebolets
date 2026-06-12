@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Bolão Kebolets</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green: #1a7a3c; --green-dark: #125a2b; --green-light: #e8f5ed;
+    --gold: #f0b429; --white: #ffffff;
+    --gray-100: #f0eeea; --gray-200: #dddbd5; --gray-400: #9b9891;
+    --gray-700: #3d3c38; --gray-900: #1a1917; --radius: 12px; --radius-sm: 8px;
+  }
+  body { font-family: 'Barlow', sans-serif; background: var(--gray-100); color: var(--gray-900); min-height: 100vh; }
+  header { background: var(--green); padding: 1rem; text-align: center; }
+  .header-title { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 800; color: var(--gold); text-transform: uppercase; }
+  .header-sub { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+  main { max-width: 560px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+  /* LOGIN */
+  #login-section { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 1.5rem; text-align: center; }
+  #login-section h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--green); text-transform: uppercase; margin-bottom: 12px; }
+  .pw-row { display: flex; gap: 8px; max-width: 280px; margin: 0 auto; }
+  .pw-row input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); font-size: 14px; font-family: 'Barlow', sans-serif; outline: none; }
+  .pw-row input:focus { border-color: var(--green); }
+
+  /* CARDS */
+  .section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-400); margin: 1.25rem 0 8px; }
+  .game-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 1rem 1.25rem; margin-bottom: 10px; }
+  .game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .game-teams { font-size: 14px; font-weight: 600; color: var(--gray-900); }
+  .game-date { font-size: 11px; color: var(--gray-400); }
+  .score-row { display: flex; align-items: center; gap: 8px; }
+  .score-row input { width: 52px; height: 40px; text-align: center; font-size: 18px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; border: 2px solid var(--gray-200); border-radius: var(--radius-sm); background: #f9f9f7; color: var(--gray-900); outline: none; -moz-appearance: textfield; }
+  .score-row input::-webkit-outer-spin-button, .score-row input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .score-row input:focus { border-color: var(--green); }
+  .score-sep { font-size: 16px; font-weight: 700; color: var(--gray-400); }
+  .btn-salvar { background: var(--green); color: var(--white); border: none; border-radius: var(--radius-sm); padding: 8px 16px; font-size: 13px; font-weight: 600; font-family: 'Barlow', sans-serif; cursor: pointer; margin-left: auto; display: block; margin-top: 10px; }
+  .btn-salvar:hover { background: var(--green-dark); }
+  .btn-salvar:disabled { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
+  .saved-tag { font-size: 11px; color: var(--green); font-weight: 600; margin-top: 6px; text-align: right; }
+  .saved-tag.hidden { visibility: hidden; }
+  .btn-enter { background: var(--green); color: var(--white); border: none; border-radius: var(--radius-sm); padding: 9px 20px; font-size: 14px; font-weight: 600; font-family: 'Barlow', sans-serif; cursor: pointer; white-space: nowrap; }
+
+  #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--gray-900); color: var(--white); padding: 10px 22px; border-radius: 24px; font-size: 13px; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 999; }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #loading { text-align: center; padding: 2rem; color: var(--gray-400); font-size: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-title">⚙️ Admin — Bolão Kebolets</div>
+  <div class="header-sub">Inserir resultados dos jogos</div>
+</header>
+<main>
+  <div id="login-section">
+    <h2>Senha de acesso</h2>
+    <div class="pw-row">
+      <input type="password" id="pw-input" placeholder="Senha" onkeydown="if(event.key==='Enter')checkPw()" />
+      <button class="btn-enter" onclick="checkPw()">Entrar</button>
+    </div>
+  </div>
+  <div id="loading" style="display:none;">Carregando jogos...</div>
+  <div id="main-section" style="display:none;"></div>
+</main>
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://yciqdafnvcxrxgkwltxy.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljaXFkYWZudmN4cnhna3dsdHh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODI4MjIsImV4cCI6MjA5Njc1ODgyMn0.cZtvIIuPYMteHrqHjRlzLw9dU8bUeVr4LCOVvhVTxqw';
+const ADMIN_PW = 'kebolets2026';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allGames = [];
+let resultados = {};
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function checkPw() {
+  const pw = document.getElementById('pw-input').value;
+  if (pw !== ADMIN_PW) { showToast('Senha incorreta.'); return; }
+  document.getElementById('login-section').style.display = 'none';
+  document.getElementById('loading').style.display = 'block';
+  loadData();
+}
+
+async function loadData() {
+  const { data: jogos } = await sb.from('jogos').select('*').order('kickoff_utc', { ascending: true });
+  const { data: res } = await sb.from('resultados').select('*');
+  allGames = jogos || [];
+  resultados = {};
+  if (res) res.forEach(r => { resultados[r.game_id] = r; });
+  document.getElementById('loading').style.display = 'none';
+  renderAdmin();
+}
+
+function renderAdmin() {
+  const section = document.getElementById('main-section');
+  const now = new Date();
+
+  // Separa jogos passados sem resultado, e jogos com resultado
+  const semResultado = allGames.filter(g => new Date(g.kickoff_utc) < now && !resultados[g.id]);
+  const comResultado = allGames.filter(g => resultados[g.id]);
+
+  let html = '';
+
+  if (semResultado.length) {
+    html += `<div class="section-label">Aguardando resultado</div>`;
+    for (const g of semResultado) {
+      html += gameCardHtml(g, null);
+    }
+  }
+
+  if (comResultado.length) {
+    html += `<div class="section-label">Resultados cadastrados</div>`;
+    for (const g of comResultado.reverse()) {
+      html += gameCardHtml(g, resultados[g.id]);
+    }
+  }
+
+  if (!html) html = `<div style="text-align:center;padding:2rem;color:var(--gray-400);font-size:14px;">Nenhum jogo passado sem resultado.</div>`;
+
+  section.innerHTML = html;
+  section.style.display = 'block';
+}
+
+function gameCardHtml(g, res) {
+  const dateLabel = new Date(g.kickoff_utc).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', timeZone: 'America/Sao_Paulo' });
+  const hVal = res ? res.home_score : '';
+  const aVal = res ? res.away_score : '';
+  const finalizado = res ? res.finalizado : false;
+  return `
+    <div class="game-card">
+      <div class="game-header">
+        <span class="game-teams">${g.home_flag} ${g.home_name} × ${g.away_name} ${g.away_flag}</span>
+        <span class="game-date">${dateLabel}</span>
+      </div>
+      <div class="score-row">
+        <input type="number" min="0" max="20" id="h-${g.id}" value="${hVal}" placeholder="0">
+        <span class="score-sep">×</span>
+        <input type="number" min="0" max="20" id="a-${g.id}" value="${aVal}" placeholder="0">
+        <label style="font-size:12px;color:var(--gray-400);display:flex;align-items:center;gap:4px;margin-left:8px;">
+          <input type="checkbox" id="fin-${g.id}" ${finalizado ? 'checked' : ''}> Finalizado
+        </label>
+      </div>
+      <button class="btn-salvar" onclick="salvarResultado('${g.id}')">Salvar resultado</button>
+      <div class="saved-tag hidden" id="tag-${g.id}">✓ Salvo</div>
+    </div>`;
+}
+
+async function salvarResultado(gameId) {
+  const h = parseInt(document.getElementById('h-' + gameId).value);
+  const a = parseInt(document.getElementById('a-' + gameId).value);
+  const fin = document.getElementById('fin-' + gameId).checked;
+  if (isNaN(h) || isNaN(a) || h < 0 || a < 0) { showToast('Placar inválido.'); return; }
+
+  const btn = document.querySelector(`[onclick="salvarResultado('${gameId}')"]`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+
+  const { error } = await sb.from('resultados').upsert({
+    game_id: gameId,
+    home_score: h,
+    away_score: a,
+    finalizado: fin,
+    atualizado_em: new Date().toISOString()
+  }, { onConflict: 'game_id' });
+
+  if (error) {
+    showToast('Erro: ' + error.message);
+    if (btn) { btn.disabled = false; btn.textContent = 'Salvar resultado'; }
+    return;
+  }
+
+  resultados[gameId] = { game_id: gameId, home_score: h, away_score: a, finalizado: fin };
+  if (btn) { btn.disabled = false; btn.textContent = 'Salvar resultado'; }
+  const tag = document.getElementById('tag-' + gameId);
+  if (tag) { tag.classList.remove('hidden'); setTimeout(() => tag.classList.add('hidden'), 3000); }
+  showToast('Resultado salvo! ✓');
+}
+</script>
+</body>
+</html>
