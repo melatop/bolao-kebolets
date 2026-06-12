@@ -464,7 +464,7 @@ async function renderPlacares() {
   let html = '';
 
   if (todosHoje.length) {
-    html += `<div class="ranking-header" style="margin-top:1.25rem;"><span class="ranking-title">📊 Placares do dia</span></div><div class="placares-card">`;
+    html += `<div class="ranking-header" style="margin-top:1.25rem;"><span class="ranking-title">📊 Jogos do dia</span></div><div class="placares-card">`;
     for (const g of todosHoje) {
       html += placarRowHtml(g, resultados);
     }
