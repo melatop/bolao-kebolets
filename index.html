@@ -230,9 +230,9 @@ async function fetchTodosPalpites() {
   const ids = todayGames.map(g => g.id);
   const { data } = await sb.from('palpites').select('nome,game_id,home_score,away_score').in('game_id', ids);
   if (!data) return;
-  const OCULTOS = ['test'];
+  const OCULTOS = ['TEST'];
   for (const p of data) {
-    if (OCULTOS.includes(p.nome.toLowerCase().trim())) continue;
+    if (OCULTOS.includes(p.nome.toUpperCase().trim())) continue;
     if (!todosPalpites[p.game_id]) todosPalpites[p.game_id] = [];
     todosPalpites[p.game_id].push(p);
   }
@@ -261,11 +261,11 @@ async function renderRanking() {
 
   const resultados = await fetchResultados();
   const temAoVivoRanking = Object.values(resultados).some((r) => !r.finalizado);
-  const OCULTOS = ['test'];
+  const OCULTOS = ['TEST'];
   const pontos = {}, acertos = {}, cravados = {};
 
   for (const p of todos) {
-    if (OCULTOS.includes(p.nome.toLowerCase().trim())) continue;
+    if (OCULTOS.includes(p.nome.toUpperCase().trim())) continue;
     if (!pontos[p.nome]) { pontos[p.nome] = 0; acertos[p.nome] = 0; cravados[p.nome] = 0; }
     const pts = calcPoints(p, resultados[p.game_id]);
     if (pts !== null) {
@@ -490,7 +490,7 @@ async function renderPlacares() {
 
 async function enterWithName() {
   const input = document.getElementById('name-input');
-  const nome = input.value.trim();
+  const nome = input.value.trim().toUpperCase();
   if (!nome) { showToast('Digite seu nome para continuar.'); return; }
   currentUser = nome;
   localStorage.setItem('bolao_kebolets_nome', nome);
