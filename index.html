@@ -140,7 +140,7 @@
     <h2>Quem é você?</h2>
     <p id="login-hint">Novo usuário? Crie um nome e senha. Já tem conta? Digite seu nome e senha.</p>
     <div class="name-row" style="flex-direction:column;gap:8px;">
-      <input type="text" id="name-input" placeholder="Seu nome" maxlength="40" style="width:100%;max-width:320px;margin:0 auto;" onkeydown="if(event.key==='Enter')document.getElementById('pw-input').focus()" oninput="this.value=this.value.toUpperCase()" />
+      <input type="text" id="name-input" placeholder="Seu nome" maxlength="40" autocomplete="off" autocorrect="off" autocapitalize="characters" style="width:100%;max-width:320px;margin:0 auto;" onkeydown="if(event.key==='Enter')document.getElementById('pw-input').focus()" oninput="this.value=this.value.toUpperCase()" />
       <input type="password" id="pw-input" placeholder="Senha" maxlength="40" style="width:100%;max-width:320px;margin:0 auto;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-size:15px;font-family:'Barlow',sans-serif;color:var(--gray-900);background:var(--gray-50);outline:none;" onkeydown="if(event.key==='Enter')enterWithName()" />
       <button class="btn-enter" onclick="enterWithName()" style="width:100%;max-width:320px;margin:0 auto;">Entrar</button>
     </div>
