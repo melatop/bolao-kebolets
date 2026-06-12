@@ -491,11 +491,12 @@ async function renderRanking() {
       <span class="ranking-sub">${temAoVivoRanking ? '<span style="background:#fff7ed;color:#c2410c;font-weight:700;padding:3px 10px;border-radius:20px;font-size:11px;">prévia</span>' : 'Copa 2026'}</span>
     </div>
     <div class="ranking-card">
-      <div class="ranking-legend" style="grid-template-columns:32px 1fr auto 48px 48px 48px;">
-        <div></div><div></div><div style="font-size:10px;color:var(--gray-400);font-weight:600;letter-spacing:0.04em;text-transform:uppercase;">Forma</div>
+      <div class="ranking-legend" style="grid-template-columns:32px 1fr 48px 48px 48px auto;">
+        <div></div><div></div>
         <div class="rk-col"><span class="rk-col-label">Pts</span></div>
         <div class="rk-col"><span class="rk-col-label">✅</span></div>
         <div class="rk-col"><span class="rk-col-label">🎯</span></div>
+        <div style="font-size:10px;color:var(--gray-400);font-weight:600;letter-spacing:0.04em;text-transform:uppercase;text-align:right;">Forma</div>
       </div>`;
 
   ranking.forEach((r, i) => {
@@ -504,13 +505,13 @@ async function renderRanking() {
     const forma = calcForma(r.nome);
     const formaDots = forma.map(f => `<span class="forma-dot f${f}"></span>`).join('');
     html += `
-      <div class="${rowClass}" style="grid-template-columns:32px 1fr auto 48px 48px 48px;">
+      <div class="${rowClass}" style="grid-template-columns:32px 1fr 48px 48px 48px auto;">
         <div class="pos">${posIcons[i] || (i + 1)}</div>
         <div class="rk-name${isMe ? ' me-label' : ''}">${r.nome.toUpperCase()}</div>
-        <div class="forma">${formaDots}</div>
         <div class="rk-col"><span class="rk-pts">${r.pts}</span></div>
         <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.acertos}</div>
         <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.cravados}</div>
+        <div class="forma" style="justify-content:flex-end;padding-left:8px;">${formaDots}</div>
       </div>`;
   });
 
