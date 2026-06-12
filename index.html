@@ -220,7 +220,7 @@ async function renderRanking() {
   }
 
   const resultados = await fetchResultados();
-  const temAoVivoRanking = Object.values(resultados).some((r: any) => !r.finalizado);
+  const temAoVivoRanking = Object.values(resultados).some((r) => !r.finalizado);
   const OCULTOS = ['test'];
   const pontos = {}, acertos = {}, cravados = {};
 
