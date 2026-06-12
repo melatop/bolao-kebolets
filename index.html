@@ -97,7 +97,12 @@
   .rk-col { text-align: center; font-size: 13px; }
   .rk-col-label { font-size: 10px; color: var(--gray-400); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
   .rk-pts { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--green); }
-  .ranking-empty { text-align: center; padding: 2rem; color: var(--gray-400); font-size: 14px; }
+  .forma { display: flex; gap: 3px; align-items: center; }
+  .forma-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .forma-dot.f3 { background: #22c55e; }
+  .forma-dot.f1 { background: #f0b429; }
+  .forma-dot.f0 { background: #ef4444; }
+  .forma-dot.fn { background: var(--gray-200); }
   .historico-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); overflow: hidden; margin-top: 10px; }
   .historico-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--gray-100); }
   .historico-row:last-child { border-bottom: none; }
@@ -445,18 +450,33 @@ async function renderRanking() {
   const resultados = await fetchResultados();
   const temAoVivoRanking = Object.values(resultados).some((r) => !r.finalizado);
   const OCULTOS = ['TEST'];
-  const pontos = {}, acertos = {}, cravados = {};
+  const pontos = {}, acertos = {}, cravados = {}, palpitesPorNome = {};
+
+  const { data: jogos } = await sb.from('jogos').select('id, kickoff_utc').order('kickoff_utc', { ascending: false });
+  const jogosFinalizados = (jogos || []).filter(g => resultados[g.id]?.finalizado).map(g => g.id);
 
   for (const p of todos) {
     const nome = p.nome.toUpperCase().trim();
     if (OCULTOS.includes(nome)) continue;
-    if (!pontos[nome]) { pontos[nome] = 0; acertos[nome] = 0; cravados[nome] = 0; }
+    if (!pontos[nome]) { pontos[nome] = 0; acertos[nome] = 0; cravados[nome] = 0; palpitesPorNome[nome] = {}; }
+    palpitesPorNome[nome][p.game_id] = p;
     const pts = calcPoints(p, resultados[p.game_id]);
     if (pts !== null) {
       pontos[nome] += pts;
       if (pts >= 1) acertos[nome]++;
       if (pts === 3) cravados[nome]++;
     }
+  }
+
+  function calcForma(nome) {
+    return jogosFinalizados.slice(0, 5).map(gid => {
+      const p = palpitesPorNome[nome]?.[gid];
+      if (!p) return 'n';
+      const pts = calcPoints(p, resultados[gid]);
+      if (pts === 3) return '3';
+      if (pts === 1) return '1';
+      return '0';
+    });
   }
 
   const ranking = Object.keys(pontos)
@@ -471,8 +491,8 @@ async function renderRanking() {
       <span class="ranking-sub">${temAoVivoRanking ? '<span style="background:#fff7ed;color:#c2410c;font-weight:700;padding:3px 10px;border-radius:20px;font-size:11px;">prévia</span>' : 'Copa 2026'}</span>
     </div>
     <div class="ranking-card">
-      <div class="ranking-legend">
-        <div></div><div></div>
+      <div class="ranking-legend" style="grid-template-columns:32px 1fr auto 48px 48px 48px;">
+        <div></div><div></div><div style="font-size:10px;color:var(--gray-400);font-weight:600;letter-spacing:0.04em;text-transform:uppercase;">Forma</div>
         <div class="rk-col"><span class="rk-col-label">Pts</span></div>
         <div class="rk-col"><span class="rk-col-label">✅</span></div>
         <div class="rk-col"><span class="rk-col-label">🎯</span></div>
@@ -481,10 +501,13 @@ async function renderRanking() {
   ranking.forEach((r, i) => {
     const isMe = r.nome.toUpperCase() === currentUser;
     const rowClass = isMe ? 'ranking-row me' : i === 0 ? 'ranking-row top1' : 'ranking-row';
+    const forma = calcForma(r.nome);
+    const formaDots = forma.map(f => `<span class="forma-dot f${f}"></span>`).join('');
     html += `
-      <div class="${rowClass}">
+      <div class="${rowClass}" style="grid-template-columns:32px 1fr auto 48px 48px 48px;">
         <div class="pos">${posIcons[i] || (i + 1)}</div>
         <div class="rk-name${isMe ? ' me-label' : ''}">${r.nome.toUpperCase()}</div>
+        <div class="forma">${formaDots}</div>
         <div class="rk-col"><span class="rk-pts">${r.pts}</span></div>
         <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.acertos}</div>
         <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.cravados}</div>
