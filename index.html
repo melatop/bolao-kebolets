@@ -564,14 +564,15 @@ function renderGames() {
     html = `<div class="empty-day"><strong>Sem jogos hoje</strong>Não há partidas programadas para hoje. Volte amanhã!</div>`;
   }
 
+  if (jogosAbertos.length) html += `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;opacity:0.4;cursor:not-allowed;" disabled onclick="salvarTodos()">Salvar</button>`;
+  html += `<button class="btn-ranking" id="btn-historico" onclick="toggleHistorico()" style="margin-bottom:8px;">📋 Meu histórico</button>`;
+
   section.innerHTML = html;
   section.style.display = 'block';
   section.querySelectorAll('.team-flag').forEach(el => {
     twemoji.parse(el, { folder: 'svg', ext: '.svg' });
   });
 
-  if (jogosAbertos.length) section.innerHTML += `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;opacity:0.4;cursor:not-allowed;" disabled onclick="salvarTodos()">Salvar</button>`;
-  section.innerHTML += `<button class="btn-ranking" id="btn-historico" onclick="toggleHistorico()" style="margin-bottom:8px;">📋 Meu histórico</button>`;
   if (rankingVisible) document.getElementById('ranking-section').style.display = 'block';
   if (placaresVisible) { document.getElementById('placares-section').style.display = 'block'; renderPlacares(); }
 }
