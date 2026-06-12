@@ -824,8 +824,6 @@ async function enterWithName() {
   try { await Promise.race([loadGuesses(nome), timeout(5000)]); } catch(e) { console.error(e); }
   try { await Promise.race([fetchTodosPalpites(), timeout(5000)]); } catch(e) { console.error(e); }
 
-  const initials = nome.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-  document.getElementById('user-initials').textContent = initials;
   document.getElementById('user-display').textContent = nome;
   document.getElementById('user-bar').style.display = 'flex';
   document.getElementById('loading-games').style.display = 'none';
