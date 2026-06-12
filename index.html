@@ -141,6 +141,10 @@
     <p id="login-hint">Novo usuário? Crie um nome e senha. Já tem conta? Digite seu nome e senha.</p>
     <div class="name-row" style="flex-direction:column;gap:8px;">
       <input type="text" id="name-input" placeholder="Seu nome" maxlength="40" autocomplete="off" autocorrect="off" autocapitalize="characters" style="width:100%;max-width:320px;margin:0 auto;" onkeydown="if(event.key==='Enter')document.getElementById('pw-input').focus()" oninput="this.value=this.value.toUpperCase()" />
+      <div id="name-fixed-row" style="display:none;align-items:center;justify-content:center;gap:10px;max-width:320px;margin:0 auto;width:100%;">
+        <span id="name-fixed" style="font-size:16px;font-weight:700;color:var(--green);flex:1;text-align:left;padding:9px 12px;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);"></span>
+        <button onclick="trocarUsuario()" style="font-size:12px;color:var(--gray-400);background:none;border:none;cursor:pointer;white-space:nowrap;font-family:'Barlow',sans-serif;">Não sou eu</button>
+      </div>
       <input type="password" id="pw-input" placeholder="Senha" maxlength="40" style="width:100%;max-width:320px;margin:0 auto;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);font-size:15px;font-family:'Barlow',sans-serif;color:var(--gray-900);background:var(--gray-50);outline:none;" onkeydown="if(event.key==='Enter')enterWithName()" />
       <button class="btn-enter" onclick="enterWithName()" style="width:100%;max-width:320px;margin:0 auto;">Entrar</button>
     </div>
@@ -737,6 +741,15 @@ async function confirmarRename() {
   await enterWithName();
 }
 
+function trocarUsuario() {
+  localStorage.removeItem('bolao_kebolets_nome');
+  document.getElementById('name-input').value = '';
+  document.getElementById('name-input').style.display = '';
+  document.getElementById('name-fixed-row').style.display = 'none';
+  document.getElementById('login-hint').textContent = 'Novo usuário? Crie um nome e senha. Já tem conta? Digite seu nome e senha.';
+  document.getElementById('name-input').focus();
+}
+
 async function enterWithName() {
   const input = document.getElementById('name-input');
   const pwInput = document.getElementById('pw-input');
@@ -868,6 +881,9 @@ function sair() {
   document.getElementById('rename-section').style.display = 'none';
   document.getElementById('name-section').style.display = 'block';
   document.getElementById('name-input').value = '';
+  document.getElementById('name-input').style.display = '';
+  document.getElementById('name-fixed-row').style.display = 'none';
+  document.getElementById('login-hint').textContent = 'Novo usuário? Crie um nome e senha. Já tem conta? Digite seu nome e senha.';
 }
 
 window.addEventListener('load', () => {
@@ -876,13 +892,12 @@ window.addEventListener('load', () => {
   if (nomeSalvo) {
     const nomeUpper = nomeSalvo.toUpperCase();
     localStorage.setItem('bolao_kebolets_nome', nomeUpper);
-    const input = document.getElementById('name-input');
-    input.value = nomeUpper;
-    // Garante cursor no final
-    input.addEventListener('focus', function() {
-      const len = this.value.length;
-      this.setSelectionRange(len, len);
-    }, { once: true });
+    // Mostra nome fixo, esconde campo editável
+    document.getElementById('name-input').value = nomeUpper;
+    document.getElementById('name-input').style.display = 'none';
+    document.getElementById('name-fixed').textContent = nomeUpper;
+    document.getElementById('name-fixed-row').style.display = 'flex';
+    document.getElementById('login-hint').textContent = 'Digite sua senha para entrar.';
   }
 });
 </script>
