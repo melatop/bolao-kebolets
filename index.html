@@ -876,7 +876,13 @@ window.addEventListener('load', () => {
   if (nomeSalvo) {
     const nomeUpper = nomeSalvo.toUpperCase();
     localStorage.setItem('bolao_kebolets_nome', nomeUpper);
-    document.getElementById('name-input').value = nomeUpper;
+    const input = document.getElementById('name-input');
+    input.value = nomeUpper;
+    // Garante cursor no final
+    input.addEventListener('focus', function() {
+      const len = this.value.length;
+      this.setSelectionRange(len, len);
+    }, { once: true });
   }
 });
 </script>
