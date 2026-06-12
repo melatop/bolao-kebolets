@@ -541,14 +541,20 @@ function renderGames() {
 
   const jogosAbertos = todayGames.filter(g => !isLocked(g));
   const jogosEmAndamento = todayGames.filter(g => isLocked(g));
+  const resultadosAtuais = window._resultadosCache || {};
 
   let html = '';
 
-  // SEÇÃO 1: Jogos em andamento (com preview de palpites)
+  // SEÇÃO 1: Jogos em andamento (com preview de palpites + placar ao vivo)
   if (jogosEmAndamento.length) {
-    html += `<div class="day-label" style="margin-top:4px;">Em andamento</div>`;
+    const temAoVivo = jogosEmAndamento.some(g => resultadosAtuais[g.id] && !resultadosAtuais[g.id].finalizado);
+    html += `<div class="day-label" style="margin-top:4px;">Em andamento ${temAoVivo ? '<span style="background:#fee2e2;color:#dc2626;font-weight:700;padding:2px 8px;border-radius:20px;font-size:10px;margin-left:4px;">🔴 Ao vivo</span>' : ''}</div>`;
     for (const g of jogosEmAndamento) {
       const palpites = todosPalpites[g.id] || [];
+      const res = resultadosAtuais[g.id];
+      const aoVivo = res && !res.finalizado;
+      const placarAtual = res ? `<span style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:${aoVivo ? '#dc2626' : 'var(--gray-900)'};">${res.home_score} × ${res.away_score}</span>${aoVivo ? ' <span style="font-size:10px;background:#fee2e2;color:#dc2626;font-weight:700;padding:2px 6px;border-radius:10px;">AO VIVO</span>' : ''}` : '<span style="font-size:13px;color:var(--gray-400);">Em andamento</span>';
+
       html += `
         <div class="match-card">
           <div class="match-meta">
@@ -557,21 +563,21 @@ function renderGames() {
           </div>
           <div class="match-body">
             <div class="team"><span class="team-flag">${g.home_flag}</span><span class="team-name">${g.home_name}</span></div>
-            <div class="score-inputs">
-              <input class="score-input" type="number" min="0" max="20" disabled id="h-${g.id}" value="${savedGuesses[g.id]?.home_score ?? '0'}">
-              <span class="score-sep">×</span>
-              <input class="score-input" type="number" min="0" max="20" disabled id="a-${g.id}" value="${savedGuesses[g.id]?.away_score ?? '0'}">
-            </div>
+            <div style="text-align:center;">${placarAtual}</div>
             <div class="team"><span class="team-flag">${g.away_flag}</span><span class="team-name">${g.away_name}</span></div>
           </div>
           ${palpites.length ? `
           <div class="preview-section">
             <div class="preview-title">Palpites</div>
-            ${palpites.map(p => `
+            ${palpites.map(p => {
+              const pts = res ? calcPoints(p, res) : null;
+              const ptsLabel = pts === null ? '' : pts === 3 ? ' <span style="color:var(--green);font-size:11px;font-weight:700;">+3</span>' : pts === 1 ? ' <span style="color:var(--gold-dark);font-size:11px;font-weight:700;">+1</span>' : ' <span style="color:#ef4444;font-size:11px;font-weight:700;">0</span>';
+              return `
               <div class="preview-row">
-                <span class="preview-nome${p.nome.toUpperCase() === currentUser ? ' me' : ''}">${p.nome.toUpperCase() === currentUser ? '→ ' : ''}${p.nome.toUpperCase()}</span>
+                <span class="preview-nome${p.nome.toUpperCase() === currentUser ? ' me' : ''}">${p.nome.toUpperCase() === currentUser ? '→ ' : ''}${p.nome.toUpperCase()}${ptsLabel}</span>
                 <span class="preview-score">${p.home_score} × ${p.away_score}</span>
-              </div>`).join('')}
+              </div>`;
+            }).join('')}
           </div>` : ''}
         </div>`;
     }
@@ -838,6 +844,8 @@ async function enterWithName() {
   document.getElementById('user-display').textContent = nome;
   document.getElementById('user-bar').style.display = 'flex';
   document.getElementById('loading-games').style.display = 'none';
+  // Pré-carrega resultados para uso em renderGames
+  try { window._resultadosCache = await Promise.race([fetchResultados(), timeout(5000)]); } catch(e) { window._resultadosCache = {}; }
   renderGames();
   document.getElementById('ranking-section').style.display = 'block';
   document.getElementById('placares-section').style.display = 'block';
@@ -845,7 +853,6 @@ async function enterWithName() {
   try { await Promise.race([renderRanking(), timeout(8000)]); } catch(e) { console.error(e); }
   try { await Promise.race([renderPlacares(), timeout(8000)]); } catch(e) { console.error(e); }
 }
-
 async function salvarTodos() {
   const btn = document.getElementById('btn-salvar-todos');
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
