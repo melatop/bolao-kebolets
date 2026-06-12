@@ -383,9 +383,9 @@ function renderGames() {
           <div class="match-body">
             <div class="team"><span class="team-flag">${g.home_flag}</span><span class="team-name">${g.home_name}</span></div>
             <div class="score-inputs">
-              <input class="score-input" type="number" min="0" max="20" step="1" id="h-${g.id}" value="${hVal}" oninput="onEditPalpite('${g.id}')">
+              <input class="score-input" type="number" min="0" max="20" step="1" id="h-${g.id}" value="${hVal}" oninput="onEditPalpite('${g.id}')" onfocus="if(this.value==='0')this.value='';" onblur="if(this.value==='')this.value='0';">
               <span class="score-sep">×</span>
-              <input class="score-input" type="number" min="0" max="20" step="1" id="a-${g.id}" value="${aVal}" oninput="onEditPalpite('${g.id}')">
+              <input class="score-input" type="number" min="0" max="20" step="1" id="a-${g.id}" value="${aVal}" oninput="onEditPalpite('${g.id}')" onfocus="if(this.value==='0')this.value='';" onblur="if(this.value==='')this.value='0';">
             </div>
             <div class="team"><span class="team-flag">${g.away_flag}</span><span class="team-name">${g.away_name}</span></div>
           </div>
