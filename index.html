@@ -162,7 +162,8 @@
     <div id="loading-ranking" style="display:none;">Calculando ranking...</div>
     <div id="ranking-content"></div>
   </div>
-  <div id="historico-section" style="display:none;">
+  <div id="historico-section">
+    <button class="btn-ranking" id="btn-historico" onclick="toggleHistorico()" style="margin-top:8px;">📋 Meu histórico</button>
     <div id="historico-content"></div>
   </div>
 </main>
@@ -384,7 +385,7 @@ async function renderHistorico() {
     html += `
       <div class="historico-row">
         <div class="hist-jogo">
-          <span>${g.home_flag} ${g.home_name} × ${g.away_name} ${g.away_flag}</span><br>
+          <span><span class="placar-flag">${g.home_flag}</span>${g.home_name} × ${g.away_name}<span class="placar-flag">${g.away_flag}</span></span><br>
           <span style="font-weight:400;color:var(--gray-400);">${dateLabel} · ${g.grupo}</span>
         </div>
         <div class="hist-scores">
@@ -401,21 +402,20 @@ async function renderHistorico() {
     </div>`;
 
   contentEl.innerHTML = html;
-  contentEl.querySelectorAll('.hist-jogo').forEach(el => {
+  contentEl.querySelectorAll('.placar-flag').forEach(el => {
     twemoji.parse(el, { folder: 'svg', ext: '.svg' });
   });
 }
 
 async function toggleHistorico() {
-  const hs = document.getElementById('historico-section');
+  const content = document.getElementById('historico-content');
   const btn = document.getElementById('btn-historico');
-  if (hs.style.display === 'none') {
-    hs.style.display = 'block';
+  if (!content.innerHTML || content.innerHTML === '') {
     btn.textContent = '✕ Fechar histórico';
     btn.classList.add('active');
     await renderHistorico();
   } else {
-    hs.style.display = 'none';
+    content.innerHTML = '';
     btn.textContent = '📋 Meu histórico';
     btn.classList.remove('active');
   }
@@ -565,7 +565,6 @@ function renderGames() {
   }
 
   if (jogosAbertos.length) html += `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;opacity:0.4;cursor:not-allowed;" disabled onclick="salvarTodos()">Salvar</button>`;
-  html += `<button class="btn-ranking" id="btn-historico" onclick="toggleHistorico()" style="margin-bottom:8px;">📋 Meu histórico</button>`;
 
   section.innerHTML = html;
   section.style.display = 'block';
@@ -825,7 +824,9 @@ function sair() {
   document.getElementById('games-section').innerHTML = '';
   document.getElementById('ranking-section').style.display = 'none';
   document.getElementById('placares-section').style.display = 'none';
-  document.getElementById('historico-section').style.display = 'none';
+  document.getElementById('historico-content').innerHTML = '';
+  document.getElementById('btn-historico') && (document.getElementById('btn-historico').textContent = '📋 Meu histórico');
+  document.getElementById('btn-historico') && document.getElementById('btn-historico').classList.remove('active');
   document.getElementById('rename-section').style.display = 'none';
   document.getElementById('name-section').style.display = 'block';
   document.getElementById('name-input').value = '';
