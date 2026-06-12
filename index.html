@@ -98,6 +98,19 @@
   .rk-col-label { font-size: 10px; color: var(--gray-400); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
   .rk-pts { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--green); }
   .ranking-empty { text-align: center; padding: 2rem; color: var(--gray-400); font-size: 14px; }
+  .historico-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); overflow: hidden; margin-top: 10px; }
+  .historico-row { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--gray-100); }
+  .historico-row:last-child { border-bottom: none; }
+  .hist-jogo { font-size: 12px; color: var(--gray-700); line-height: 1.3; }
+  .hist-jogo span { font-weight: 600; }
+  .hist-scores { text-align: center; }
+  .hist-palpite { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; color: var(--gray-900); }
+  .hist-resultado { font-size: 11px; color: var(--gray-400); }
+  .hist-pts { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; width: 28px; text-align: center; }
+  .hist-pts.p3 { color: var(--green); }
+  .hist-pts.p1 { color: var(--gold-dark); }
+  .hist-pts.p0 { color: #e53e3e; }
+  .hist-pts.pending { color: var(--gray-300); font-size: 11px; font-weight: 500; }
   #loading-ranking { text-align: center; padding: 1.5rem; color: var(--gray-400); font-size: 14px; }
   #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--gray-900); color: var(--white); padding: 10px 22px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 999; white-space: nowrap; }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -148,6 +161,9 @@
   <div id="ranking-section" style="display:none;">
     <div id="loading-ranking" style="display:none;">Calculando ranking...</div>
     <div id="ranking-content"></div>
+  </div>
+  <div id="historico-section" style="display:none;">
+    <div id="historico-content"></div>
   </div>
 </main>
 <div id="toast"></div>
@@ -307,6 +323,154 @@ async function renderRanking() {
       </div>`;
 
   ranking.forEach((r, i) => {
+    const isMe = r.nome === currentUser;
+    const rowClass = isMe ? 'ranking-row me' : i === 0 ? 'ranking-row top1' : 'ranking-row';
+    html += `
+      <div class="${rowClass}">
+        <div class="pos">${posIcons[i] || (i + 1)}</div>
+        <div class="rk-name${isMe ? ' me-label' : ''}">${r.nome.toUpperCase()}</div>
+        <div class="rk-col"><span class="rk-pts">${r.pts}</span></div>
+        <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.acertos}</div>
+        <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.cravados}</div>
+      </div>`;
+  });
+
+  html += `</div><div style="text-align:center;font-size:11px;color:var(--gray-400);margin-top:8px;">✅ resultados certos &nbsp;·&nbsp; 🎯 placares exatos</div>`;
+  contentEl.innerHTML = html;
+}
+
+async function renderHistorico() {
+  const contentEl = document.getElementById('historico-content');
+  contentEl.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--gray-400);font-size:14px;">Carregando...</div>';
+
+  const { data: palpites } = await sb.from('palpites').select('*').ilike('nome', currentUser);
+  const { data: jogos } = await sb.from('jogos').select('*');
+  const resultados = await fetchResultados();
+
+  if (!palpites || !palpites.length) {
+    contentEl.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--gray-400);font-size:14px;">Nenhum palpite registrado ainda.</div>';
+    return;
+  }
+
+  const jogosMap = {};
+  if (jogos) jogos.forEach(g => { jogosMap[g.id] = g; });
+
+  // Ordena por kickoff_utc descendente
+  palpites.sort((a, b) => {
+    const ga = jogosMap[a.game_id], gb = jogosMap[b.game_id];
+    if (!ga || !gb) return 0;
+    return new Date(gb.kickoff_utc) - new Date(ga.kickoff_utc);
+  });
+
+  let totalPts = 0;
+  let html = `<div class="historico-card">`;
+
+  for (const p of palpites) {
+    const g = jogosMap[p.game_id];
+    if (!g) continue;
+    const res = resultados[p.game_id];
+    const pts = calcPoints(p, res);
+    if (pts !== null) totalPts += pts;
+
+    const dateLabel = new Date(g.kickoff_utc).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', timeZone: 'America/Sao_Paulo' });
+    const ptsHtml = pts === null
+      ? `<div class="hist-pts pending">—</div>`
+      : `<div class="hist-pts p${pts}">${pts > 0 ? '+' : ''}${pts}</div>`;
+
+    const resultadoHtml = res
+      ? `<div class="hist-resultado">Resultado: ${res.home_score}×${res.away_score}</div>`
+      : `<div class="hist-resultado">Aguardando</div>`;
+
+    html += `
+      <div class="historico-row">
+        <div class="hist-jogo">
+          <span>${g.home_flag} ${g.home_name} × ${g.away_name} ${g.away_flag}</span><br>
+          <span style="font-weight:400;color:var(--gray-400);">${dateLabel} · ${g.grupo}</span>
+        </div>
+        <div class="hist-scores">
+          <div class="hist-palpite">${p.home_score} × ${p.away_score}</div>
+          ${resultadoHtml}
+        </div>
+        ${ptsHtml}
+      </div>`;
+  }
+
+  html += `</div>
+    <div style="text-align:center;font-size:12px;color:var(--gray-400);margin-top:8px;">
+      Total acumulado: <strong style="color:var(--green);font-size:14px;">${totalPts} pts</strong>
+    </div>`;
+
+  contentEl.innerHTML = html;
+  contentEl.querySelectorAll('.hist-jogo').forEach(el => {
+    twemoji.parse(el, { folder: 'svg', ext: '.svg' });
+  });
+}
+
+async function toggleHistorico() {
+  const hs = document.getElementById('historico-section');
+  const btn = document.getElementById('btn-historico');
+  if (hs.style.display === 'none') {
+    hs.style.display = 'block';
+    btn.textContent = '✕ Fechar histórico';
+    btn.classList.add('active');
+    await renderHistorico();
+  } else {
+    hs.style.display = 'none';
+    btn.textContent = '📋 Meu histórico';
+    btn.classList.remove('active');
+  }
+}
+
+async function renderRanking() {
+  const loadEl = document.getElementById('loading-ranking');
+  const contentEl = document.getElementById('ranking-content');
+  loadEl.style.display = 'block';
+  contentEl.innerHTML = '';
+
+  const { data: todos, error } = await sb.from('palpites').select('*');
+  if (error || !todos || !todos.length) {
+    loadEl.style.display = 'none';
+    contentEl.innerHTML = '<div class="ranking-empty">Nenhum palpite registrado ainda.</div>';
+    return;
+  }
+
+  const resultados = await fetchResultados();
+  const temAoVivoRanking = Object.values(resultados).some((r) => !r.finalizado);
+  const OCULTOS = ['TEST'];
+  const pontos = {}, acertos = {}, cravados = {};
+
+  for (const p of todos) {
+    const nome = p.nome.toUpperCase().trim();
+    if (OCULTOS.includes(nome)) continue;
+    if (!pontos[nome]) { pontos[nome] = 0; acertos[nome] = 0; cravados[nome] = 0; }
+    const pts = calcPoints(p, resultados[p.game_id]);
+    if (pts !== null) {
+      pontos[nome] += pts;
+      if (pts >= 1) acertos[nome]++;
+      if (pts === 3) cravados[nome]++;
+    }
+  }
+
+  const ranking = Object.keys(pontos)
+    .map(n => ({ nome: n, pts: pontos[n], acertos: acertos[n], cravados: cravados[n] }))
+    .sort((a, b) => b.pts - a.pts || b.cravados - a.cravados || b.acertos - a.acertos);
+
+  loadEl.style.display = 'none';
+  const posIcons = ['🥇', '🥈', '🥉'];
+  let html = `
+    <div class="ranking-header">
+      <span class="ranking-title">🏆 Ranking Kebolets</span>
+      <span class="ranking-sub">${temAoVivoRanking ? '<span style="background:#fff7ed;color:#c2410c;font-weight:700;padding:3px 10px;border-radius:20px;font-size:11px;">prévia</span>' : 'Copa 2026'}</span>
+    </div>
+    <div class="ranking-card">
+      <div class="ranking-legend">
+        <div></div><div></div>
+        <div class="rk-col"><span class="rk-col-label">Pts</span></div>
+        <div class="rk-col"><span class="rk-col-label">✅</span></div>
+        <div class="rk-col"><span class="rk-col-label">🎯</span></div>
+      </div>`;
+
+  ranking.forEach((r, i) => {
     const isMe = r.nome.toUpperCase() === currentUser;
     const rowClass = isMe ? 'ranking-row me' : i === 0 ? 'ranking-row top1' : 'ranking-row';
     html += `
@@ -407,6 +571,7 @@ function renderGames() {
   });
 
   if (jogosAbertos.length) section.innerHTML += `<button class="btn-save" id="btn-salvar-todos" style="width:100%;padding:12px;font-size:14px;border-radius:var(--radius-sm);margin-bottom:8px;opacity:0.4;cursor:not-allowed;" disabled onclick="salvarTodos()">Salvar</button>`;
+  section.innerHTML += `<button class="btn-ranking" id="btn-historico" onclick="toggleHistorico()" style="margin-bottom:8px;">📋 Meu histórico</button>`;
   if (rankingVisible) document.getElementById('ranking-section').style.display = 'block';
   if (placaresVisible) { document.getElementById('placares-section').style.display = 'block'; renderPlacares(); }
 }
@@ -659,6 +824,7 @@ function sair() {
   document.getElementById('games-section').innerHTML = '';
   document.getElementById('ranking-section').style.display = 'none';
   document.getElementById('placares-section').style.display = 'none';
+  document.getElementById('historico-section').style.display = 'none';
   document.getElementById('rename-section').style.display = 'none';
   document.getElementById('name-section').style.display = 'block';
   document.getElementById('name-input').value = '';
