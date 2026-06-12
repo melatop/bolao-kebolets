@@ -569,9 +569,13 @@ function renderGames() {
           ${palpites.length ? `
           <div class="preview-section">
             <div class="preview-title">Palpites</div>
-            ${palpites.map(p => {
+            ${[...palpites].sort((a, b) => {
+              const pa = res ? (calcPoints(a, res) ?? -1) : -1;
+              const pb = res ? (calcPoints(b, res) ?? -1) : -1;
+              return pb - pa;
+            }).map(p => {
               const pts = res ? calcPoints(p, res) : null;
-              const ptsLabel = pts === 3 ? ' <span style="color:var(--green);font-size:11px;font-weight:700;">+3</span>' : pts === 1 ? ' <span style="color:var(--gold-dark);font-size:11px;font-weight:700;">+1</span>' : pts === 0 ? ' <span style="color:#ef4444;font-size:11px;font-weight:700;">0</span>' : '';
+              const ptsLabel = pts === 3 ? ' <span style="color:var(--green);font-size:15px;font-weight:700;margin-left:6px;">+3</span>' : pts === 1 ? ' <span style="color:var(--gold-dark);font-size:15px;font-weight:700;margin-left:6px;">+1</span>' : pts === 0 ? ' <span style="color:#ef4444;font-size:15px;font-weight:700;margin-left:6px;">0</span>' : '';
               return `<div class="preview-row">
                 <span class="preview-nome${p.nome.toUpperCase() === currentUser ? ' me' : ''}">${p.nome.toUpperCase() === currentUser ? '→ ' : ''}${p.nome.toUpperCase()}</span>
                 <span class="preview-score">${p.home_score} × ${p.away_score}${ptsLabel}</span>
