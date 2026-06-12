@@ -64,6 +64,18 @@
     </div>
   </div>
   <div id="loading" style="display:none;">Carregando jogos...</div>
+  <div id="migration-section" style="display:none;margin-bottom:1.5rem;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9b9891;margin-bottom:8px;">Migrar nome de usuário</div>
+    <div style="background:white;border-radius:12px;border:1px solid #dddbd5;padding:1rem 1.25rem;">
+      <p style="font-size:13px;color:#9b9891;margin-bottom:12px;">Use para migrar palpites de um nome antigo (com espaço) para um novo nome sem espaço.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <input type="text" id="old-name" placeholder="Nome antigo (ex: Lucas Alves)" style="padding:9px 12px;border:1.5px solid #dddbd5;border-radius:8px;font-size:14px;font-family:'Barlow',sans-serif;outline:none;" />
+        <input type="text" id="new-name" placeholder="Nome novo (ex: LucasAlves)" style="padding:9px 12px;border:1.5px solid #dddbd5;border-radius:8px;font-size:14px;font-family:'Barlow',sans-serif;outline:none;" />
+        <button class="btn-salvar" onclick="migrarNome()" style="margin-top:4px;">Migrar palpites</button>
+        <div id="migration-msg" style="font-size:12px;color:#1a7a3c;font-weight:600;display:none;"></div>
+      </div>
+    </div>
+  </div>
   <div id="main-section" style="display:none;"></div>
 </main>
 <div id="toast"></div>
@@ -100,7 +112,44 @@ async function loadData() {
   resultados = {};
   if (res) res.forEach(r => { resultados[r.game_id] = r; });
   document.getElementById('loading').style.display = 'none';
+  document.getElementById('migration-section').style.display = 'block';
   renderAdmin();
+}
+
+async function migrarNome() {
+  const oldName = document.getElementById('old-name').value.trim();
+  const newName = document.getElementById('new-name').value.trim().toUpperCase();
+  const msg = document.getElementById('migration-msg');
+
+  if (!oldName || !newName) { showToast('Preencha os dois campos.'); return; }
+  if (!/^[A-Z0-9]+$/.test(newName)) { showToast('Nome novo deve ter apenas letras e números.'); return; }
+
+  const btn = document.querySelector('[onclick="migrarNome()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Migrando...'; }
+
+  // Atualiza palpites
+  const { data: palpites, error: errP } = await sb.from('palpites')
+    .update({ nome: newName })
+    .ilike('nome', oldName)
+    .select();
+
+  // Atualiza usuário se existir
+  await sb.from('usuarios').update({ nome: newName }).ilike('nome', oldName);
+
+  if (errP) {
+    showToast('Erro ao migrar: ' + errP.message);
+    if (btn) { btn.disabled = false; btn.textContent = 'Migrar palpites'; }
+    return;
+  }
+
+  const count = palpites?.length || 0;
+  msg.textContent = `✓ ${count} palpite(s) migrado(s) de "${oldName}" para "${newName}"`;
+  msg.style.display = 'block';
+  setTimeout(() => { msg.style.display = 'none'; }, 5000);
+  if (btn) { btn.disabled = false; btn.textContent = 'Migrar palpites'; }
+  document.getElementById('old-name').value = '';
+  document.getElementById('new-name').value = '';
+  showToast('Migração concluída!');
 }
 
 function renderAdmin() {
@@ -116,8 +165,7 @@ function renderAdmin() {
   if (semResultado.length) {
     html += `<div class="section-label">Aguardando resultado</div>`;
     html += `<div style="font-size:12px;color:var(--gray-400);margin-bottom:10px;line-height:1.5;">Os resultados são atualizados automaticamente via API a cada minuto. Use os campos abaixo apenas se a API falhar em atualizar um jogo.</div>`;
-    for (const g of semResultado) {
-      html += gameCardHtml(g, null);
+    for (const g of semResultado) {      html += gameCardHtml(g, null);
     }
   }
 

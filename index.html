@@ -497,6 +497,7 @@ async function enterWithName() {
   const senha = pwInput ? pwInput.value.trim() : '';
 
   if (!nome) { showToast('Digite seu nome para continuar.'); return; }
+  if (!/^[A-Z0-9]+$/.test(nome)) { showToast('Use apenas letras e números, sem espaços ou símbolos.'); return; }
   if (!senha) { showToast('Digite sua senha para continuar.'); return; }
 
   // Busca usuário no banco
