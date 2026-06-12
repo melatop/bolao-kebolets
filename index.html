@@ -553,7 +553,7 @@ function renderGames() {
       const palpites = todosPalpites[g.id] || [];
       const res = resultadosAtuais[g.id];
       const aoVivo = res && !res.finalizado;
-      const placarAtual = res ? `<span style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:${aoVivo ? '#dc2626' : 'var(--gray-900)'};">${res.home_score} × ${res.away_score}</span>${aoVivo ? ' <span style="font-size:10px;background:#fee2e2;color:#dc2626;font-weight:700;padding:2px 6px;border-radius:10px;">AO VIVO</span>' : ''}` : '<span style="font-size:13px;color:var(--gray-400);">Em andamento</span>';
+      const placarAtual = res ? `<span style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;color:${aoVivo ? '#dc2626' : 'var(--gray-900)'};">${res.home_score} × ${res.away_score}</span>` : '<span style="font-size:13px;color:var(--gray-400);">Em andamento</span>';
 
       html += `
         <div class="match-card">
@@ -573,8 +573,8 @@ function renderGames() {
               const pts = res ? calcPoints(p, res) : null;
               const ptsLabel = pts === 3 ? ' <span style="color:var(--green);font-size:11px;font-weight:700;">+3</span>' : pts === 1 ? ' <span style="color:var(--gold-dark);font-size:11px;font-weight:700;">+1</span>' : pts === 0 ? ' <span style="color:#ef4444;font-size:11px;font-weight:700;">0</span>' : '';
               return `<div class="preview-row">
-                <span class="preview-nome${p.nome.toUpperCase() === currentUser ? ' me' : ''}">${p.nome.toUpperCase() === currentUser ? '→ ' : ''}${p.nome.toUpperCase()}${ptsLabel}</span>
-                <span class="preview-score">${p.home_score} × ${p.away_score}</span>
+                <span class="preview-nome${p.nome.toUpperCase() === currentUser ? ' me' : ''}">${p.nome.toUpperCase() === currentUser ? '→ ' : ''}${p.nome.toUpperCase()}</span>
+                <span class="preview-score">${p.home_score} × ${p.away_score}${ptsLabel}</span>
               </div>`;
             }).join('')}
           </div>` : ''}
