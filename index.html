@@ -874,7 +874,9 @@ window.addEventListener('load', () => {
   initDateLabel();
   const nomeSalvo = localStorage.getItem('bolao_kebolets_nome');
   if (nomeSalvo) {
-    document.getElementById('name-input').value = nomeSalvo.toUpperCase();
+    const nomeUpper = nomeSalvo.toUpperCase();
+    localStorage.setItem('bolao_kebolets_nome', nomeUpper);
+    document.getElementById('name-input').value = nomeUpper;
   }
 });
 </script>
