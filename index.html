@@ -405,10 +405,12 @@ async function enterWithName() {
   localStorage.setItem('bolao_kebolets_nome', nome);
   document.getElementById('name-section').style.display = 'none';
   document.getElementById('loading-games').style.display = 'block';
-  try {
-    todayGames = await fetchTodayGames();
-    await loadGuesses(nome);
-  } catch(e) { console.error(e); todayGames = []; }
+
+  const timeout = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms));
+
+  try { todayGames = await Promise.race([fetchTodayGames(), timeout(8000)]); } catch(e) { console.error(e); todayGames = []; }
+  try { await Promise.race([loadGuesses(nome), timeout(5000)]); } catch(e) { console.error(e); }
+
   const initials = nome.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   document.getElementById('user-initials').textContent = initials;
   document.getElementById('user-display').textContent = nome;
@@ -417,8 +419,8 @@ async function enterWithName() {
   renderGames();
   document.getElementById('ranking-section').style.display = 'block';
   document.getElementById('placares-section').style.display = 'block';
-  await renderRanking();
-  await renderPlacares();
+  try { await Promise.race([renderRanking(), timeout(8000)]); } catch(e) { console.error(e); }
+  try { await Promise.race([renderPlacares(), timeout(8000)]); } catch(e) { console.error(e); }
 }
 
 async function salvarTodos() {
