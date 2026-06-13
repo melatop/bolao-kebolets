@@ -234,6 +234,9 @@ async function fetchTodayGames() {
   if (error) { console.error(error); return { today: [], yesterday: [] }; }
   const all = data || [];
 
+  let resultados = {};
+  try { resultados = await fetchResultados(); } catch(e) {}
+
   // Filtra pelo dia BRT do kickoff_utc, não pelo sufixo do game_id
   const tod = all.filter(g => {
     const kickBRT = new Date(new Date(g.kickoff_utc).toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
@@ -252,9 +255,6 @@ async function fetchTodayGames() {
     return km + kd === dateKeyY;
   });
 
-  // Jogos de ontem sem resultado final também entram em todayGames
-  let resultados = {};
-  try { resultados = await fetchResultados(); } catch(e) {}
   const yesterdayNoResult = yest.filter(g => !resultados[g.id] || !resultados[g.id].finalizado);
 
   return {
