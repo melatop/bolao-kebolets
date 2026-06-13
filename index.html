@@ -393,7 +393,7 @@ async function renderHistorico() {
   palpites.sort((a, b) => {
     const ga = jogosMap[a.game_id], gb = jogosMap[b.game_id];
     if (!ga || !gb) return 0;
-    return new Date(gb.kickoff_utc) - new Date(ga.kickoff_utc);
+    return new Date(gb.kickoff_brt || gb.kickoff_utc) - new Date(ga.kickoff_brt || ga.kickoff_utc);
   });
 
   const palpitesFinalizados = palpites.filter(p => resultados[p.game_id]?.finalizado);
@@ -413,7 +413,7 @@ async function renderHistorico() {
     const pts = calcPoints(p, res);
     if (pts !== null) totalPts += pts;
 
-    const dateLabel = new Date(g.kickoff_utc).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', timeZone: 'America/Sao_Paulo' });
+    const dateLabel = new Date(g.kickoff_brt || g.kickoff_utc).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', timeZone: 'America/Sao_Paulo' });
     const ptsHtml = pts === null
       ? `<div class="hist-pts pending">—</div>`
       : `<div class="hist-pts p${pts}">${pts > 0 ? '+' : ''}${pts}</div>`;
@@ -479,7 +479,7 @@ async function renderRanking() {
   const OCULTOS = ['TEST'];
   const pontos = {}, acertos = {}, cravados = {}, palpitesPorNome = {};
 
-  const { data: jogos } = await sb.from('jogos').select('id, kickoff_utc').order('kickoff_utc', { ascending: false });
+  const { data: jogos } = await sb.from('jogos').select('id, kickoff_brt, kickoff_utc').order('kickoff_brt', { ascending: false });
   const jogosFinalizados = (jogos || []).filter(g => resultados[g.id]?.finalizado).map(g => g.id);
 
   // Deduplicar: para cada nome+game_id, mantém só o último palpite
@@ -580,7 +580,7 @@ function renderGames() {
       html += `
         <div class="match-card">
           <div class="match-meta">
-            <span class="match-time">${formatKickoffBRT(g.kickoff_utc)}</span>
+            <span class="match-time">${formatKickoffBRT(g.kickoff_brt || g.kickoff_utc)}</span>
             <span class="match-group">${g.grupo}</span>
           </div>
           <div class="match-body">
@@ -620,7 +620,7 @@ function renderGames() {
       html += `
         <div class="match-card">
           <div class="match-meta">
-            <span class="match-time">${formatKickoffBRT(g.kickoff_utc)}</span>
+            <span class="match-time">${formatKickoffBRT(g.kickoff_brt || g.kickoff_utc)}</span>
             <span class="match-group">${g.grupo}</span>
           </div>
           <div class="match-body">
@@ -689,7 +689,7 @@ function placarRowHtml(g, resultados) {
     scoreHtml = `<div class="placar-score" style="${aoVivo ? 'color:#dc2626;' : ''}">${res.home_score} <span style="color:var(--gray-400);font-size:14px;">×</span> ${res.away_score}</div>`;
   } else {
     // locked mas sem resultado na API — mostra horário normal
-    scoreHtml = `<div class="placar-score pending">${formatKickoffBRT(g.kickoff_utc)}</div>`;
+    scoreHtml = `<div class="placar-score pending">${formatKickoffBRT(g.kickoff_brt || g.kickoff_utc)}</div>`;
   }
   return `
     <div class="placar-row">
@@ -703,22 +703,10 @@ async function renderPlacares() {
   const resultados = await fetchResultados();
   const contentEl = document.getElementById('placares-content');
 
-  // todayGames tem só os abertos; yesterdayGames tem só finalizados de ontem
-  // Precisamos de TODOS os jogos de hoje (abertos + encerrados)
-  const now = new Date();
-  const brt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-  const mo = String(brt.getMonth() + 1).padStart(2, '0');
-  const dy = String(brt.getDate()).padStart(2, '0');
-  const dateKey = mo + dy;
-
-  const { data } = await sb.from('jogos').select('*').order('kickoff_utc', { ascending: true });
-  const now2 = new Date();
-  const brt2 = new Date(now2.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-  const todayStr2 = brt2.toISOString().slice(0, 10);
-  const todosHoje = (data || []).filter(g => {
-    const kickDay = (g.kickoff_brt || g.kickoff_utc).slice(0, 10);
-    return kickDay === todayStr2;
-  });
+  // Todos os jogos de hoje em BRT
+  const todayBRT = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' })).toISOString().slice(0, 10);
+  const { data } = await sb.from('jogos').select('*').order('kickoff_brt', { ascending: true });
+  const todosHoje = (data || []).filter(g => (g.kickoff_brt || g.kickoff_utc).slice(0, 10) === todayBRT);
 
   // Jogos de hoje: abertos, em andamento e finalizados
   const abertos = todosHoje.filter(g => !isLocked(g));
