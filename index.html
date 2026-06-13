@@ -677,9 +677,8 @@ function placarRowHtml(g, resultados) {
   let scoreHtml = '';
   if (res) {
     scoreHtml = `<div class="placar-score" style="${aoVivo ? 'color:#dc2626;' : ''}">${res.home_score} <span style="color:var(--gray-400);font-size:14px;">×</span> ${res.away_score}</div>`;
-  } else if (locked) {
-    scoreHtml = `<div class="placar-score pending">em andamento</div>`;
   } else {
+    // locked mas sem resultado na API — mostra horário normal
     scoreHtml = `<div class="placar-score pending">${formatKickoffBRT(g.kickoff_utc)}</div>`;
   }
   return `
