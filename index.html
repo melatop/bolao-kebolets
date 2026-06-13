@@ -241,8 +241,17 @@ async function fetchTodayGames() {
   try { resultados = await fetchResultados(); } catch(e) {}
 
   // kickoff_brt vem como "2026-06-13 16:00:00+00" — pega só os primeiros 10 chars
-  const tod = all.filter(g => (g.kickoff_brt || g.kickoff_utc || '').substring(0, 10) === todayStr);
-  const yest = all.filter(g => (g.kickoff_brt || g.kickoff_utc || '').substring(0, 10) === yesterdayStr);
+  const tod = all.filter(g => {
+    const kickStr = g.kickoff_brt || g.kickoff_utc || '';
+    // Extrai YYYY-MM-DD ignorando timezone
+    const kickDay = kickStr.replace('T', ' ').substring(0, 10);
+    return kickDay === todayStr;
+  });
+  const yest = all.filter(g => {
+    const kickStr = g.kickoff_brt || g.kickoff_utc || '';
+    const kickDay = kickStr.replace('T', ' ').substring(0, 10);
+    return kickDay === yesterdayStr;
+  });
 
   const yesterdayNoResult = yest.filter(g => !resultados[g.id] || !resultados[g.id].finalizado);
 
@@ -701,7 +710,10 @@ async function renderPlacares() {
   const brtNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
   const todayBRT = `${brtNow.getFullYear()}-${String(brtNow.getMonth()+1).padStart(2,'0')}-${String(brtNow.getDate()).padStart(2,'0')}`;
   const { data } = await sb.from('jogos').select('*').order('kickoff_brt', { ascending: true });
-  const todosHoje = (data || []).filter(g => (g.kickoff_brt || g.kickoff_utc || '').substring(0, 10) === todayBRT);
+  const todosHoje = (data || []).filter(g => {
+    const kickStr = g.kickoff_brt || g.kickoff_utc || '';
+    return kickStr.replace('T', ' ').substring(0, 10) === todayBRT;
+  });
 
   // Jogos de hoje: abertos, em andamento e finalizados
   const abertos = todosHoje.filter(g => !isLocked(g));
