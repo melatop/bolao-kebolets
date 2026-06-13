@@ -876,11 +876,15 @@ let _autoRefreshTimer = null;
 async function iniciarAutoRefresh() {
   if (_autoRefreshTimer) clearInterval(_autoRefreshTimer);
   _autoRefreshTimer = setInterval(async () => {
-    // Só atualiza se há jogos em andamento
     const temAoVivo = todayGames.some(g => isLocked(g));
     if (!temAoVivo || !currentUser) { clearInterval(_autoRefreshTimer); return; }
     try {
       window._resultadosCache = await fetchResultados();
+      // Recarrega todayGames para detectar jogos que finalizaram
+      const result = await fetchTodayGames();
+      todayGames = result.today || [];
+      yesterdayGames = result.yesterday || [];
+      await fetchTodosPalpites();
       renderGames();
       renderPlacares();
     } catch(e) { console.error(e); }
