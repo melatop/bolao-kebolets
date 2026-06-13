@@ -86,9 +86,10 @@
   .ranking-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; margin-top: 1.25rem; }
   .ranking-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--gray-900); text-transform: uppercase; letter-spacing: 0.03em; }
   .ranking-sub { font-size: 12px; color: var(--gray-400); }
-  .ranking-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); overflow-x: auto; }
-  .ranking-legend { display: grid; grid-template-columns: 32px minmax(90px, 1fr) 48px 48px 48px auto; gap: 8px; padding: 6px 16px 8px; border-bottom: 1px solid var(--gray-200); width: 100%; box-sizing: border-box; }
-  .ranking-row { display: grid; grid-template-columns: 32px minmax(90px, 1fr) 48px 48px 48px auto; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--gray-100); width: 100%; box-sizing: border-box; }
+  .ranking-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); overflow: hidden; }
+  .ranking-scroll { overflow-x: auto; }
+  .ranking-legend { display: flex; align-items: center; gap: 8px; padding: 6px 16px 8px; border-bottom: 1px solid var(--gray-200); }
+  .ranking-row { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--gray-100); }
   .forma { display: flex; gap: 3px; align-items: center; padding-right: 8px; }
   .ranking-row:last-child { border-bottom: none; }
   .ranking-row.me { background: var(--green-light); }
@@ -517,12 +518,13 @@ async function renderRanking() {
       <span class="ranking-sub">${temAoVivoRanking ? '<span style="background:#fff7ed;color:#c2410c;font-weight:700;padding:3px 10px;border-radius:20px;font-size:11px;">prévia</span>' : 'Copa 2026'}</span>
     </div>
     <div class="ranking-card">
-      <div class="ranking-legend" >
-        <div></div><div></div>
-        <div class="rk-col"><span class="rk-col-label">Pts</span></div>
-        <div class="rk-col"><span class="rk-col-label">✅</span></div>
-        <div class="rk-col"><span class="rk-col-label">🎯</span></div>
-        <div style="font-size:10px;color:var(--gray-400);font-weight:600;letter-spacing:0.04em;text-transform:uppercase;text-align:right;">Forma</div>
+      <div class="ranking-legend">
+        <div style="width:28px;flex-shrink:0;"></div>
+        <div style="flex:1;min-width:80px;"></div>
+        <div class="rk-col" style="width:44px;flex-shrink:0;"><span class="rk-col-label">Pts</span></div>
+        <div class="rk-col" style="width:32px;flex-shrink:0;"><span class="rk-col-label">✅</span></div>
+        <div class="rk-col" style="width:32px;flex-shrink:0;"><span class="rk-col-label">🎯</span></div>
+        <div style="font-size:10px;color:var(--gray-400);font-weight:600;letter-spacing:0.04em;text-transform:uppercase;width:90px;flex-shrink:0;text-align:right;">Forma</div>
       </div>`;
 
   ranking.forEach((r, i) => {
@@ -531,13 +533,13 @@ async function renderRanking() {
     const forma = calcForma(r.nome);
     const formaDots = forma.map(f => `<span class="forma-dot f${f}"></span>`).join('');
     html += `
-      <div class="${rowClass}" >
-        <div class="pos">${posIcons[i] || (i + 1)}</div>
-        <div class="rk-name${isMe ? ' me-label' : ''}">${r.nome.toUpperCase()}</div>
-        <div class="rk-col"><span class="rk-pts">${r.pts}</span></div>
-        <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.acertos}</div>
-        <div class="rk-col" style="color:var(--gray-700);font-weight:600;">${r.cravados}</div>
-        <div class="forma" style="justify-content:flex-end;padding-left:8px;">${formaDots}</div>
+      <div class="${rowClass}">
+        <div class="pos" style="width:28px;flex-shrink:0;">${posIcons[i] || (i + 1)}</div>
+        <div class="rk-name${isMe ? ' me-label' : ''}" style="flex:1;min-width:80px;">${r.nome.toUpperCase()}</div>
+        <div class="rk-col" style="width:44px;flex-shrink:0;"><span class="rk-pts">${r.pts}</span></div>
+        <div class="rk-col" style="width:32px;flex-shrink:0;color:var(--gray-700);font-weight:600;">${r.acertos}</div>
+        <div class="rk-col" style="width:32px;flex-shrink:0;color:var(--gray-700);font-weight:600;">${r.cravados}</div>
+        <div class="forma" style="width:90px;flex-shrink:0;justify-content:flex-end;">${formaDots}</div>
       </div>`;
   });
 
