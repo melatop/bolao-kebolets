@@ -479,20 +479,20 @@ async function renderRanking() {
     const pts = calcPoints(p, resultados[p.game_id]);
     if (pts !== null) {
       pontos[nome] += pts;
-      if (pts >= 1) acertos[nome]++;
+      if (pts === 1) acertos[nome]++;
       if (pts === 3) cravados[nome]++;
     }
   }
 
   function calcForma(nome) {
-    return jogosFinalizados.slice(0, 5).map(gid => {
+    return jogosFinalizados.map(gid => {
       const p = palpitesPorNome[nome]?.[gid];
       if (!p) return 'n';
       const pts = calcPoints(p, resultados[gid]);
       if (pts === 3) return '3';
       if (pts === 1) return '1';
       return '0';
-    });
+    }).slice(0, 5);
   }
 
   const ranking = Object.keys(pontos)
