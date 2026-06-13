@@ -204,11 +204,20 @@ function showToast(msg) {
 }
 
 function isLocked(game) {
-  return new Date() >= new Date(game.kickoff_utc);
+  const kickoff = game.kickoff_brt || game.kickoff_utc;
+  return new Date() >= new Date(kickoff);
 }
 
 function formatKickoffBRT(utcString) {
   return new Date(utcString).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }) + ' (Brasília)';
+}
+
+function formatKickoffFromGame(game) {
+  const kickoff = game.kickoff_brt || game.kickoff_utc;
+  const d = new Date(kickoff);
+  const h = String(d.getHours()).padStart(2, '0');
+  const m = String(d.getMinutes()).padStart(2, '0');
+  return `${h}:${m} (Brasília)`;
 }
 
 function initDateLabel() {
@@ -219,40 +228,25 @@ function initDateLabel() {
 async function fetchTodayGames() {
   const now = new Date();
   const brt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-  const mo = String(brt.getMonth() + 1).padStart(2, '0');
-  const dy = String(brt.getDate()).padStart(2, '0');
-  const dateKey = mo + dy;
+  const todayStr = brt.toISOString().slice(0, 10); // YYYY-MM-DD BRT
+  const yesterdayBRT = new Date(brt);
+  yesterdayBRT.setDate(yesterdayBRT.getDate() - 1);
+  const yesterdayStr = yesterdayBRT.toISOString().slice(0, 10);
 
-  // Dia anterior
-  const yesterday = new Date(brt);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const moY = String(yesterday.getMonth() + 1).padStart(2, '0');
-  const dyY = String(yesterday.getDate()).padStart(2, '0');
-  const dateKeyY = moY + dyY;
-
-  const { data, error } = await sb.from('jogos').select('*').order('kickoff_utc', { ascending: true });
+  const { data, error } = await sb.from('jogos').select('*').order('kickoff_brt', { ascending: true });
   if (error) { console.error(error); return { today: [], yesterday: [] }; }
   const all = data || [];
 
   let resultados = {};
   try { resultados = await fetchResultados(); } catch(e) {}
 
-  // Filtra pelo dia BRT do kickoff_utc, não pelo sufixo do game_id
   const tod = all.filter(g => {
-    const kickBRT = new Date(new Date(g.kickoff_utc).toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-    const km = String(kickBRT.getMonth() + 1).padStart(2, '0');
-    const kd = String(kickBRT.getDate()).padStart(2, '0');
-    if (km + kd !== dateKey) return false;
-    // Se passou mais de 3h e não tem resultado finalizado, ignora (kickoff_utc provavelmente errado)
-    const diffHoras = (now - new Date(g.kickoff_utc)) / 3600000;
-    if (diffHoras > 3 && (!resultados[g.id] || !resultados[g.id].finalizado)) return false;
-    return true;
+    const kickDay = (g.kickoff_brt || g.kickoff_utc).slice(0, 10);
+    return kickDay === todayStr;
   });
   const yest = all.filter(g => {
-    const kickBRT = new Date(new Date(g.kickoff_utc).toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-    const km = String(kickBRT.getMonth() + 1).padStart(2, '0');
-    const kd = String(kickBRT.getDate()).padStart(2, '0');
-    return km + kd === dateKeyY;
+    const kickDay = (g.kickoff_brt || g.kickoff_utc).slice(0, 10);
+    return kickDay === yesterdayStr;
   });
 
   const yesterdayNoResult = yest.filter(g => !resultados[g.id] || !resultados[g.id].finalizado);
@@ -719,14 +713,11 @@ async function renderPlacares() {
 
   const { data } = await sb.from('jogos').select('*').order('kickoff_utc', { ascending: true });
   const now2 = new Date();
+  const brt2 = new Date(now2.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
+  const todayStr2 = brt2.toISOString().slice(0, 10);
   const todosHoje = (data || []).filter(g => {
-    const kickBRT = new Date(new Date(g.kickoff_utc).toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-    const km = String(kickBRT.getMonth() + 1).padStart(2, '0');
-    const kd = String(kickBRT.getDate()).padStart(2, '0');
-    if (km + kd !== dateKey) return false;
-    const diffHoras = (now2 - new Date(g.kickoff_utc)) / 3600000;
-    if (diffHoras > 3 && (!resultados[g.id] || !resultados[g.id].finalizado)) return false;
-    return true;
+    const kickDay = (g.kickoff_brt || g.kickoff_utc).slice(0, 10);
+    return kickDay === todayStr2;
   });
 
   // Jogos de hoje: abertos, em andamento e finalizados
