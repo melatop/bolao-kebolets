@@ -471,8 +471,16 @@ async function renderRanking() {
   const { data: jogos } = await sb.from('jogos').select('id, kickoff_utc').order('kickoff_utc', { ascending: false });
   const jogosFinalizados = (jogos || []).filter(g => resultados[g.id]?.finalizado).map(g => g.id);
 
+  // Deduplicar: para cada nome+game_id, mantém só o último palpite
+  const palpitesDedup = {};
   for (const p of todos) {
     const nome = p.nome.toUpperCase().trim();
+    const key = `${nome}__${p.game_id}`;
+    palpitesDedup[key] = { ...p, nome };
+  }
+
+  for (const p of Object.values(palpitesDedup)) {
+    const nome = p.nome;
     if (OCULTOS.includes(nome)) continue;
     if (!pontos[nome]) { pontos[nome] = 0; acertos[nome] = 0; cravados[nome] = 0; palpitesPorNome[nome] = {}; }
     palpitesPorNome[nome][p.game_id] = p;
