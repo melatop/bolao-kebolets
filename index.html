@@ -718,11 +718,15 @@ async function renderPlacares() {
   const dateKey = mo + dy;
 
   const { data } = await sb.from('jogos').select('*').order('kickoff_utc', { ascending: true });
+  const now2 = new Date();
   const todosHoje = (data || []).filter(g => {
     const kickBRT = new Date(new Date(g.kickoff_utc).toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
     const km = String(kickBRT.getMonth() + 1).padStart(2, '0');
     const kd = String(kickBRT.getDate()).padStart(2, '0');
-    return km + kd === dateKey;
+    if (km + kd !== dateKey) return false;
+    const diffHoras = (now2 - new Date(g.kickoff_utc)) / 3600000;
+    if (diffHoras > 3 && (!resultados[g.id] || !resultados[g.id].finalizado)) return false;
+    return true;
   });
 
   // Jogos de hoje: abertos, em andamento e finalizados
