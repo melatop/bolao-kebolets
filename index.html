@@ -731,7 +731,7 @@ async function renderPlacares() {
   }
 
   if (yesterdayGames.length) {
-    const ontem = new Date(brt);
+    const ontem = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
     ontem.setDate(ontem.getDate() - 1);
     const ontemLabel = ontem.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' });
     html += `<div class="ranking-header" style="margin-top:1.25rem;"><span class="ranking-title" style="font-size:14px;color:var(--gray-400);">Últimos jogos — ${ontemLabel}</span></div><div class="placares-card">`;
