@@ -239,7 +239,11 @@ async function fetchTodayGames() {
     const kickBRT = new Date(new Date(g.kickoff_utc).toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
     const km = String(kickBRT.getMonth() + 1).padStart(2, '0');
     const kd = String(kickBRT.getDate()).padStart(2, '0');
-    return km + kd === dateKey;
+    if (km + kd !== dateKey) return false;
+    // Se passou mais de 3h sem resultado, provavelmente o kickoff_utc está errado
+    const diffHoras = (now - new Date(g.kickoff_utc)) / 3600000;
+    if (diffHoras > 3 && !resultados[g.id]) return false;
+    return true;
   });
   const yest = all.filter(g => {
     const kickBRT = new Date(new Date(g.kickoff_utc).toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
