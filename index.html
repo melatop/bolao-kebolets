@@ -550,7 +550,7 @@ function renderGames() {
   const today = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' });
 
   const jogosAbertos = todayGames.filter(g => !isLocked(g));
-  const jogosEmAndamento = todayGames.filter(g => isLocked(g));
+  const jogosEmAndamento = todayGames.filter(g => isLocked(g) && (!resultadosAtuais[g.id] || !resultadosAtuais[g.id].finalizado));
   const resultadosAtuais = window._resultadosCache || {};
 
   let html = '';
