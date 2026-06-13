@@ -236,6 +236,7 @@ async function fetchTodayGames() {
   const { data, error } = await sb.from('jogos').select('*').order('kickoff_brt', { ascending: true });
   if (error) { console.error(error); return { today: [], yesterday: [] }; }
   const all = data || [];
+  console.log('todayStr:', todayStr, '| exemplo kickoff_brt:', all[0]?.kickoff_brt);
 
   let resultados = {};
   try { resultados = await fetchResultados(); } catch(e) {}
