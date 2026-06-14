@@ -307,7 +307,18 @@ async function fetchResultados() {
   try {
     const { data } = await sb.from('resultados').select('*');
     const map = {};
-    if (data) data.forEach(r => { map[r.game_id] = r; });
+    const aliasMap = { 'ger': 'ale', 'cuw': 'cur' };
+    if (data) data.forEach(r => {
+      map[r.game_id] = r;
+      // Alias para IDs com TLA diferente entre API e banco
+      const parts = r.game_id.split('-');
+      if (parts.length === 3) {
+        const h = aliasMap[parts[0]] || parts[0];
+        const a = aliasMap[parts[1]] || parts[1];
+        const altId = `${h}-${a}-${parts[2]}`;
+        if (altId !== r.game_id) map[altId] = r;
+      }
+    });
     return map;
   } catch(e) { return {}; }
 }
