@@ -509,16 +509,17 @@ async function renderRanking() {
   }
 
   function calcForma(nome) {
-    // Só mostra jogos onde o usuário palpitou E estão finalizados
-    return jogosFinalizados
+    // Pega os últimos 5 jogos finalizados onde o usuário palpitou
+    const ultimos = jogosFinalizados
       .filter(gid => palpitesPorNome[nome]?.[gid])
       .slice(0, 5)
-      .map(gid => {
-        const pts = calcPoints(palpitesPorNome[nome][gid], resultados[gid]);
-        if (pts === 3) return '3';
-        if (pts === 1) return '1';
-        return '0';
-      });
+      .reverse(); // mais antigo → mais recente (esquerda → direita)
+    return ultimos.map(gid => {
+      const pts = calcPoints(palpitesPorNome[nome][gid], resultados[gid]);
+      if (pts === 3) return '3';
+      if (pts === 1) return '1';
+      return '0';
+    });
   }
 
   const ranking = Object.keys(pontos)
