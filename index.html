@@ -509,11 +509,15 @@ async function renderRanking() {
   }
 
   function calcForma(nome) {
-    // Pega os últimos 5 jogos finalizados onde o usuário palpitou
+    const vistos = new Set();
     const ultimos = jogosFinalizados
-      .filter(gid => palpitesPorNome[nome]?.[gid])
+      .filter(gid => {
+        if (vistos.has(gid)) return false;
+        vistos.add(gid);
+        return palpitesPorNome[nome]?.[gid];
+      })
       .slice(0, 5)
-      .reverse(); // mais antigo → mais recente (esquerda → direita)
+      .reverse();
     return ultimos.map(gid => {
       const pts = calcPoints(palpitesPorNome[nome][gid], resultados[gid]);
       if (pts === 3) return '3';
