@@ -486,6 +486,7 @@ async function renderRanking() {
 
   const { data: jogos } = await sb.from('jogos').select('id, kickoff_brt, kickoff_utc').order('kickoff_brt', { ascending: false });
   const jogosFinalizados = (jogos || []).filter(g => resultados[g.id]?.finalizado).map(g => g.id);
+  console.log('jogosFinalizados:', jogosFinalizados.length, jogosFinalizados);
 
   // Deduplicar: para cada nome+game_id, mantém só o último palpite
   const palpitesDedup = {};
