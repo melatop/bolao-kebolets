@@ -313,7 +313,7 @@ async function fetchResultados() {
   try {
     const { data } = await sb.from('resultados').select('*');
     const map = {};
-    const aliasMap = { 'ger': 'ale', 'cuw': 'cur', 'jpn': 'jap' };
+    const aliasMap = { 'ger': 'ale', 'cuw': 'cur', 'jpn': 'jap', 'swe': 'sue' };
     if (data) data.forEach(r => {
       map[r.game_id] = r;
       // Alias para IDs com TLA diferente entre API e banco
