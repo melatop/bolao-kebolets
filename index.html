@@ -205,8 +205,13 @@ function showToast(msg) {
 
 function isLocked(game) {
   const kickoff = new Date(game.kickoff_brt || game.kickoff_utc);
-  const lockTime = new Date(kickoff.getTime() - 12 * 60 * 60 * 1000);
-  return new Date() >= lockTime;
+  return new Date() >= kickoff;
+}
+
+function isAvailable(game) {
+  const kickoff = new Date(game.kickoff_brt || game.kickoff_utc);
+  const openTime = new Date(kickoff.getTime() - 12 * 60 * 60 * 1000);
+  return new Date() >= openTime;
 }
 
 function formatKickoffBRT(utcString) {
@@ -585,7 +590,7 @@ function renderGames() {
   const today = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' });
 
   const resultadosAtuais = window._resultadosCache || {};
-  const jogosAbertos = todayGames.filter(g => !isLocked(g));
+  const jogosAbertos = todayGames.filter(g => !isLocked(g) && isAvailable(g));
   const jogosEmAndamento = todayGames.filter(g => isLocked(g) && resultadosAtuais[g.id] && !resultadosAtuais[g.id].finalizado);
 
   let html = '';
