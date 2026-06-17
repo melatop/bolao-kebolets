@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bug Reports — Admin Bolão Kebolets</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1a7a3c; --green-dark: #125a2b; --green-light: #e8f5ed;
+    --gold: #f0b429; --white: #ffffff;
+    --gray-50: #f9f9f7; --gray-100: #f0eeea; --gray-200: #dddbd5; --gray-400: #9b9891;
+    --gray-700: #3d3c38; --gray-900: #1a1917; --radius: 12px; --radius-sm: 8px;
+    --red: #b91c1c; --red-light: #fee2e2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Barlow', sans-serif; background: var(--gray-100); color: var(--gray-900); min-height: 100vh; }
+  header { background: var(--green); padding: 1rem; text-align: center; }
+  .header-title { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; color: var(--gold); text-transform: uppercase; }
+  main { max-width: 640px; margin: 0 auto; padding: 1.25rem 1rem 3rem; }
+  .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--gray-700); font-size: 14px; font-weight: 600; text-decoration: none; margin-bottom: 1rem; }
+  .filters { display: flex; gap: 8px; margin-bottom: 1rem; }
+  .filter-btn {
+    flex: 1; background: var(--white); border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm);
+    padding: 8px; font-size: 13px; font-weight: 600; font-family: inherit; color: var(--gray-700); cursor: pointer;
+  }
+  .filter-btn.active { background: var(--green); border-color: var(--green); color: white; }
+  .bug-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 1.1rem; margin-bottom: 10px; }
+  .bug-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+  .bug-title { font-size: 15px; font-weight: 700; color: var(--gray-900); }
+  .bug-status { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 10px; white-space: nowrap; }
+  .bug-status.aberto { background: var(--red-light); color: var(--red); }
+  .bug-status.resolvido { background: var(--green-light); color: var(--green); }
+  .bug-meta { font-size: 12px; color: var(--gray-400); margin-bottom: 10px; }
+  .bug-desc { font-size: 14px; color: var(--gray-700); line-height: 1.5; margin-bottom: 10px; white-space: pre-wrap; }
+  .bug-images { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .bug-images img { width: 90px; height: 90px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--gray-200); cursor: pointer; }
+  .bug-actions { display: flex; gap: 8px; }
+  .btn-toggle {
+    background: var(--gray-50); border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm);
+    padding: 7px 14px; font-size: 12px; font-weight: 600; font-family: inherit; color: var(--gray-700); cursor: pointer;
+  }
+  .btn-toggle.resolvido { border-color: var(--green); color: var(--green); }
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--gray-400); font-size: 14px; }
+  #loading { text-align: center; padding: 2rem; color: var(--gray-400); font-size: 14px; }
+  .lightbox {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999;
+    align-items: center; justify-content: center; padding: 1rem;
+  }
+  .lightbox.show { display: flex; }
+  .lightbox img { max-width: 100%; max-height: 90vh; border-radius: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-title">🐛 Bug Reports</div>
+</header>
+<main>
+  <a href="admin.html" class="back-link">← Voltar ao admin</a>
+  <div class="filters">
+    <button class="filter-btn active" data-filter="aberto" onclick="setFilter('aberto')">Abertos</button>
+    <button class="filter-btn" data-filter="resolvido" onclick="setFilter('resolvido')">Resolvidos</button>
+    <button class="filter-btn" data-filter="todos" onclick="setFilter('todos')">Todos</button>
+  </div>
+  <div id="loading">Carregando...</div>
+  <div id="bugs-list"></div>
+</main>
+
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('show')">
+  <img id="lightbox-img" src="">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://yciqdafnvcxrxgkwltxy.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljaXFkYWZudmN4cnhna3dsdHh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODI4MjIsImV4cCI6MjA5Njc1ODgyMn0.cZtvIIuPYMteHrqHjRlzLw9dU8bUeVr4LCOVvhVTxqw';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allBugs = [];
+let currentFilter = 'aberto';
+
+async function loadBugs() {
+  const { data, error } = await sb.from('bug_reports').select('*').order('criado_em', { ascending: false });
+  document.getElementById('loading').style.display = 'none';
+  if (error) { console.error(error); document.getElementById('bugs-list').innerHTML = '<div class="empty">Erro ao carregar reports.</div>'; return; }
+  allBugs = data || [];
+  render();
+}
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
+  render();
+}
+
+function render() {
+  const list = document.getElementById('bugs-list');
+  const filtered = currentFilter === 'todos' ? allBugs : allBugs.filter(b => b.status === currentFilter);
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty">Nenhum bug ${currentFilter === 'aberto' ? 'aberto' : currentFilter === 'resolvido' ? 'resolvido' : ''} por aqui. 🎉</div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(b => {
+    const data = new Date(b.criado_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const imgs = (b.imagens || []).map(url => `<img src="${url}" onclick="openLightbox('${url}')">`).join('');
+    return `
+      <div class="bug-card">
+        <div class="bug-header">
+          <div class="bug-title">${escapeHtml(b.titulo)}</div>
+          <div class="bug-status ${b.status}">${b.status === 'aberto' ? 'Aberto' : 'Resolvido'}</div>
+        </div>
+        <div class="bug-meta">${b.nome ? escapeHtml(b.nome) + ' · ' : ''}${data}</div>
+        <div class="bug-desc">${escapeHtml(b.descricao)}</div>
+        ${imgs ? `<div class="bug-images">${imgs}</div>` : ''}
+        <div class="bug-actions">
+          <button class="btn-toggle ${b.status === 'aberto' ? 'resolvido' : ''}" onclick="toggleStatus(${b.id}, '${b.status}')">
+            ${b.status === 'aberto' ? '✓ Marcar resolvido' : '↺ Reabrir'}
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function toggleStatus(id, currentStatus) {
+  const newStatus = currentStatus === 'aberto' ? 'resolvido' : 'aberto';
+  const { error } = await sb.from('bug_reports').update({ status: newStatus }).eq('id', id);
+  if (!error) {
+    const bug = allBugs.find(b => b.id === id);
+    if (bug) bug.status = newStatus;
+    render();
+  }
+}
+
+function openLightbox(url) {
+  document.getElementById('lightbox-img').src = url;
+  document.getElementById('lightbox').classList.add('show');
+}
+
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s || '';
+  return div.innerHTML;
+}
+
+loadBugs();
+</script>
+</body>
+</html>
