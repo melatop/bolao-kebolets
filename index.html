@@ -247,12 +247,18 @@ async function fetchTodayGames() {
   let resultados = {};
   try { resultados = await fetchResultados(); } catch(e) {}
 
+  const tomorrowBRT = new Date(brt);
+  tomorrowBRT.setDate(tomorrowBRT.getDate() + 1);
+  const tomorrowStr = `${tomorrowBRT.getFullYear()}-${String(tomorrowBRT.getMonth()+1).padStart(2,'0')}-${String(tomorrowBRT.getDate()).padStart(2,'0')}`;
+
   // kickoff_brt vem como "2026-06-13 16:00:00+00" — pega só os primeiros 10 chars
   const tod = all.filter(g => {
     const kickStr = g.kickoff_brt || g.kickoff_utc || '';
-    // Extrai YYYY-MM-DD ignorando timezone
     const kickDay = kickStr.replace('T', ' ').substring(0, 10);
-    return kickDay === todayStr;
+    if (kickDay === todayStr) return true;
+    // Jogos de madrugada de amanhã que já estão disponíveis (dentro das 12h antes)
+    if (kickDay === tomorrowStr && isAvailable(g)) return true;
+    return false;
   });
   const yest = all.filter(g => {
     const kickStr = g.kickoff_brt || g.kickoff_utc || '';
