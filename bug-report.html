@@ -90,6 +90,7 @@
   <a href="index.html" class="back-link">← Voltar ao bolão</a>
 
   <div class="card" id="form-card">
+    <div id="user-badge" style="display:none;font-size:13px;color:var(--gray-400);margin-bottom:1rem;">Reportando como <strong id="user-badge-name" style="color:var(--gray-700);"></strong></div>
     <form id="bug-form">
       <label for="titulo">Título do bug</label>
       <input type="text" id="titulo" placeholder="Ex: Placar não atualiza" maxlength="120" required>
@@ -105,9 +106,6 @@
       </div>
       <input type="file" id="file-input" accept="image/*" multiple>
       <div class="previews" id="previews"></div>
-
-      <label for="nome">Seu nome (opcional)</label>
-      <input type="text" id="nome" placeholder="Para sabermos quem reportou" maxlength="40">
 
       <button type="submit" id="submit-btn">Enviar report</button>
     </form>
@@ -130,6 +128,12 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let selectedFiles = [];
+
+const storedName = localStorage.getItem('bolao_kebolets_nome');
+if (storedName) {
+  document.getElementById('user-badge').style.display = 'block';
+  document.getElementById('user-badge-name').textContent = storedName;
+}
 
 const uploadZone = document.getElementById('upload-zone');
 const fileInput = document.getElementById('file-input');
@@ -187,7 +191,7 @@ document.getElementById('bug-form').addEventListener('submit', async (e) => {
 
   const titulo = document.getElementById('titulo').value.trim();
   const descricao = document.getElementById('descricao').value.trim();
-  const nome = document.getElementById('nome').value.trim();
+  const nome = localStorage.getItem('bolao_kebolets_nome') || null;
 
   try {
     const imageUrls = [];
