@@ -543,12 +543,14 @@ async function renderRanking() {
       .filter(gid => {
         if (vistos.has(gid)) return false;
         vistos.add(gid);
-        return palpitesPorNome[nome]?.[gid];
+        return true;
       })
       .slice(0, 5)
       .reverse();
     return ultimos.map(gid => {
-      const pts = calcPoints(palpitesPorNome[nome][gid], resultados[gid]);
+      const p = palpitesPorNome[nome]?.[gid];
+      if (!p) return 'n'; // não palpitou — cinza
+      const pts = calcPoints(p, resultados[gid]);
       if (pts === 3) return '3';
       if (pts === 1) return '1';
       return '0';
