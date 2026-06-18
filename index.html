@@ -620,7 +620,11 @@ async function renderRanking() {
     });
   }
 
+  // Últimos 5 jogos finalizados para checar atividade
+  const ultimos5 = jogosFinalizados.slice(0, 5);
+
   const ranking = Object.keys(pontos)
+    .filter(n => ultimos5.some(gid => palpitesPorNome[n]?.[gid]))
     .map(n => ({ nome: n, pts: pontos[n], acertos: acertos[n], cravados: cravados[n] }))
     .sort((a, b) => b.pts - a.pts || b.cravados - a.cravados || b.acertos - a.acertos);
 
