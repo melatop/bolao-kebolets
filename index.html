@@ -622,6 +622,8 @@ async function renderRanking() {
 
   // Últimos 5 jogos finalizados para checar atividade
   const ultimos5 = jogosFinalizados.slice(0, 5);
+  console.log('ultimos5:', ultimos5);
+  console.log('TIAGO palpites:', Object.keys(palpitesPorNome['TIAGO'] || {}));
 
   const ranking = Object.keys(pontos)
     .filter(n => ultimos5.some(gid => palpitesPorNome[n]?.[gid]))
