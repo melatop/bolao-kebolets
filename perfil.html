@@ -82,28 +82,34 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const TIMES = [
-  { nome: 'Atlético Mineiro', logo: 'https://crests.football-data.org/1062.png' },
-  { nome: 'Athletico Paranaense', logo: 'https://crests.football-data.org/1025.png' },
-  { nome: 'Bahia', logo: 'https://crests.football-data.org/1828.png' },
-  { nome: 'Botafogo', logo: 'https://crests.football-data.org/1067.png' },
-  { nome: 'Ceará', logo: 'https://crests.football-data.org/4771.png' },
-  { nome: 'Corinthians', logo: 'https://crests.football-data.org/1768.png' },
-  { nome: 'Cruzeiro', logo: 'https://crests.football-data.org/140.png' },
-  { nome: 'Flamengo', logo: 'https://crests.football-data.org/133.png' },
-  { nome: 'Fluminense', logo: 'https://crests.football-data.org/134.png' },
-  { nome: 'Fortaleza', logo: 'https://crests.football-data.org/7465.png' },
-  { nome: 'Grêmio', logo: 'https://crests.football-data.org/135.png' },
-  { nome: 'Internacional', logo: 'https://crests.football-data.org/136.png' },
-  { nome: 'Juventude', logo: 'https://crests.football-data.org/7721.png' },
-  { nome: 'Mirassol', logo: 'https://crests.football-data.org/16565.png' },
-  { nome: 'Palmeiras', logo: 'https://crests.football-data.org/121.png' },
-  { nome: 'RB Bragantino', logo: 'https://crests.football-data.org/119.png' },
-  { nome: 'Santos', logo: 'https://crests.football-data.org/137.png' },
-  { nome: 'São Paulo', logo: 'https://crests.football-data.org/126.png' },
-  { nome: 'Sport Recife', logo: 'https://crests.football-data.org/139.png' },
-  { nome: 'Vasco da Gama', logo: 'https://crests.football-data.org/141.png' },
-  { nome: 'Vitória', logo: 'https://crests.football-data.org/7466.png' },
+  { nome: 'Atlético Mineiro',    cor: '#000000', cor2: '#FFFFFF', sigla: 'CAM' },
+  { nome: 'Athletico Paranaense',cor: '#CC0000', cor2: '#000000', sigla: 'CAP' },
+  { nome: 'Bahia',               cor: '#005BAC', cor2: '#EF3E42', sigla: 'BAH' },
+  { nome: 'Botafogo',            cor: '#000000', cor2: '#FFFFFF', sigla: 'BOT' },
+  { nome: 'Chapecoense',         cor: '#00753B', cor2: '#FFFFFF', sigla: 'CHP' },
+  { nome: 'Corinthians',         cor: '#000000', cor2: '#FFFFFF', sigla: 'COR' },
+  { nome: 'Coritiba',            cor: '#006600', cor2: '#FFFFFF', sigla: 'CTB' },
+  { nome: 'Cruzeiro',            cor: '#003087', cor2: '#FFFFFF', sigla: 'CRU' },
+  { nome: 'Flamengo',            cor: '#CC0000', cor2: '#000000', sigla: 'FLA' },
+  { nome: 'Fluminense',          cor: '#6B1A27', cor2: '#008B45', sigla: 'FLU' },
+  { nome: 'Grêmio',              cor: '#0066CC', cor2: '#000000', sigla: 'GRE' },
+  { nome: 'Internacional',       cor: '#CC0000', cor2: '#FFFFFF', sigla: 'INT' },
+  { nome: 'Mirassol',            cor: '#FFD700', cor2: '#000080', sigla: 'MIR' },
+  { nome: 'Palmeiras',           cor: '#006600', cor2: '#FFFFFF', sigla: 'PAL' },
+  { nome: 'RB Bragantino',       cor: '#CC0000', cor2: '#FFFFFF', sigla: 'RBB' },
+  { nome: 'Remo',                cor: '#003087', cor2: '#FFFFFF', sigla: 'REM' },
+  { nome: 'Santos',              cor: '#000000', cor2: '#FFFFFF', sigla: 'SAN' },
+  { nome: 'São Paulo',           cor: '#CC0000', cor2: '#000000', sigla: 'SPF' },
+  { nome: 'Vasco da Gama',       cor: '#000000', cor2: '#FFFFFF', sigla: 'VAS' },
+  { nome: 'Vitória',             cor: '#CC0000', cor2: '#000000', sigla: 'VIT' },
 ].sort((a, b) => a.nome.localeCompare(b.nome));
+
+function escudoSVG(time, size = 28) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+    <path d="M14 2 L24 6 L24 16 Q24 22 14 26 Q4 22 4 16 L4 6 Z" fill="${time.cor}" stroke="${time.cor2}" stroke-width="1.5"/>
+    <text x="14" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" font-weight="bold" fill="${time.cor2}">${time.sigla.substring(0,3)}</text>
+  </svg>`;
+}
 
 const nome = localStorage.getItem('bolao_kebolets_nome');
 let perfilAtual = {};
@@ -140,7 +146,7 @@ function buildTimeList(selectedTime) {
   TIMES.forEach(t => {
     const item = document.createElement('div');
     item.className = 'time-item' + (t.nome === selectedTime ? ' selected' : '');
-    item.innerHTML = `<img class="time-logo" src="${t.logo}" alt="${t.nome}" onerror="this.style.opacity='0'"><span class="time-nome">${t.nome}</span>`;
+    item.innerHTML = `${escudoSVG(t)}<span class="time-nome">${t.nome}</span>`;
     item.addEventListener('click', () => {
       document.querySelectorAll('.time-item').forEach(el => el.classList.remove('selected'));
       item.classList.add('selected');
