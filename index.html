@@ -122,6 +122,31 @@
   #loading-ranking { text-align: center; padding: 1.5rem; color: var(--gray-400); font-size: 14px; }
   #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: var(--gray-900); color: var(--white); padding: 10px 22px; border-radius: 24px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 999; white-space: nowrap; }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .tab-nav { display: flex; background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); margin-bottom: 1.25rem; overflow: hidden; }
+  .tab-btn { flex: 1; background: none; border: none; padding: 11px 4px; font-size: 13px; font-weight: 600; font-family: 'Barlow', sans-serif; color: var(--gray-400); cursor: pointer; transition: all 0.15s; border-bottom: 2px solid transparent; }
+  .tab-btn.active { color: var(--green); border-bottom-color: var(--green); background: var(--green-light); }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+  .stats-metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+  .stats-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); padding: 1rem 1.25rem; margin-bottom: 12px; }
+  .stats-metric { background: var(--gray-50); border-radius: var(--radius-sm); padding: 12px; }
+  .stats-metric-label { font-size: 12px; color: var(--gray-400); margin-bottom: 4px; }
+  .stats-metric-value { font-size: 22px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; line-height: 1; }
+  .stats-metric-sub { font-size: 11px; color: var(--gray-400); margin-top: 3px; }
+  .stats-section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-400); margin-bottom: 8px; margin-top: 1.25rem; }
+  .stats-bar-row { margin-bottom: 10px; }
+  .stats-bar-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-700); margin-bottom: 4px; }
+  .stats-bar-track { height: 8px; background: var(--gray-100); border-radius: 4px; overflow: hidden; }
+  .stats-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+  .stats-compare-head { display: grid; grid-template-columns: 1fr 60px 100px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-400); padding: 0 0 8px; border-bottom: 1px solid var(--gray-100); }
+  .stats-compare-head span:nth-child(2), .stats-compare-row .cmp-you { text-align: center; color: var(--green); }
+  .stats-compare-head span:nth-child(3), .stats-compare-row .cmp-them { text-align: right; }
+  .stats-compare-row { display: grid; grid-template-columns: 1fr 60px 100px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--gray-100); font-size: 13px; }
+  .stats-compare-row:last-child { border-bottom: none; }
+  .cmp-label { color: var(--gray-700); }
+  .cmp-you { font-weight: 700; font-family: 'Barlow Condensed', sans-serif; font-size: 15px; text-align: center; }
+  .cmp-them { font-size: 12px; color: var(--gray-400); text-align: right; }
+  .cmp-them strong { color: var(--gray-700); font-size: 13px; }
   @media (max-width: 400px) { .team-flag { width: 32px; height: 32px; } .team-flag img { width: 32px; height: 32px; } .score-input { width: 38px; height: 38px; font-size: 18px; } }
 </style>
 </head>
@@ -162,17 +187,30 @@
     <button class="btn-sair" onclick="sair()">Sair</button>
   </div>
   <div id="loading-games" style="display:none;">Carregando jogos...</div>
-  <div id="games-section" style="display:none;"></div>
-  <div id="placares-section" style="display:none;">
-    <div id="placares-content"></div>
-  </div>
-  <div id="ranking-section" style="display:none;">
-    <div id="loading-ranking" style="display:none;">Calculando ranking...</div>
-    <div id="ranking-content"></div>
-  </div>
-  <div id="historico-section" style="display:none;">
-    <button class="btn-ranking" id="btn-historico" onclick="toggleHistorico()" style="margin-top:8px;">📋 Meu histórico</button>
-    <div id="historico-content"></div>
+
+  <div id="tabs-container" style="display:none;">
+    <nav class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('palpites')">⚽ Palpites</button>
+      <button class="tab-btn" onclick="switchTab('stats')">📊 Stats</button>
+      <button class="tab-btn" onclick="switchTab('historico')">📋 Histórico</button>
+    </nav>
+
+    <div id="tab-palpites" class="tab-pane active">
+      <div id="games-section"></div>
+      <div id="placares-section"><div id="placares-content"></div></div>
+      <div id="ranking-section">
+        <div id="loading-ranking" style="display:none;">Calculando ranking...</div>
+        <div id="ranking-content"></div>
+      </div>
+    </div>
+
+    <div id="tab-stats" class="tab-pane">
+      <div id="stats-content"><div style="text-align:center;padding:2rem;color:var(--gray-400);font-size:14px;">Carregando stats...</div></div>
+    </div>
+
+    <div id="tab-historico" class="tab-pane">
+      <div id="historico-content"></div>
+    </div>
   </div>
 </main>
 <div style="text-align:center;padding:1.5rem 0 2rem;">
@@ -701,8 +739,7 @@ function renderGames() {
     twemoji.parse(el, { folder: 'svg', ext: '.svg' });
   });
 
-  if (rankingVisible) document.getElementById('ranking-section').style.display = 'block';
-  if (placaresVisible) { document.getElementById('placares-section').style.display = 'block'; renderPlacares(); }
+  if (placaresVisible) renderPlacares();
 }
 
 function onEditPalpite(gameId) {
@@ -917,12 +954,10 @@ async function enterWithName() {
   document.getElementById('user-display').textContent = nome;
   document.getElementById('user-bar').style.display = 'flex';
   document.getElementById('loading-games').style.display = 'none';
+  document.getElementById('tabs-container').style.display = 'block';
   // Pré-carrega resultados para uso em renderGames
   try { window._resultadosCache = await Promise.race([fetchResultados(), timeout(5000)]); } catch(e) { window._resultadosCache = {}; }
   renderGames();
-  document.getElementById('ranking-section').style.display = 'block';
-  document.getElementById('placares-section').style.display = 'block';
-  document.getElementById('historico-section').style.display = 'block';
   try { await Promise.race([renderRanking(), timeout(8000)]); } catch(e) { console.error(e); }
   try { await Promise.race([renderPlacares(), timeout(8000)]); } catch(e) { console.error(e); }
 
@@ -930,7 +965,180 @@ async function enterWithName() {
   iniciarAutoRefresh();
 }
 
-let _autoRefreshTimer = null;
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    const tabs = ['palpites', 'stats', 'historico'];
+    b.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  if (tab === 'stats' && document.getElementById('stats-content').querySelector('[data-loaded]') === null) {
+    renderStats();
+  }
+  if (tab === 'historico' && !document.getElementById('historico-content').innerHTML) {
+    renderHistorico();
+  }
+}
+
+async function renderStats() {
+  const el = document.getElementById('stats-content');
+  el.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray-400);">Calculando...</div>';
+
+  const [resultados, { data: todosPalpites }, { data: jogos }] = await Promise.all([
+    fetchResultados(),
+    sb.from('palpites').select('*'),
+    sb.from('jogos').select('id, kickoff_brt, kickoff_utc')
+  ]);
+
+  const OCULTOS = ['TEST'];
+  const jogosFinalizados = (jogos || [])
+    .filter(g => resultados[g.id]?.finalizado)
+    .sort((a, b) => (a.kickoff_brt || a.kickoff_utc) > (b.kickoff_brt || b.kickoff_utc) ? 1 : -1)
+    .map(g => g.id);
+
+  const totalFinalizados = jogosFinalizados.length;
+  const ptsPossiveis = totalFinalizados * 3;
+
+  // Agrupa palpites por nome (dedup)
+  const palpitesPorNome = {};
+  for (const p of (todosPalpites || [])) {
+    const nome = p.nome.toUpperCase().trim();
+    if (OCULTOS.includes(nome)) continue;
+    if (!palpitesPorNome[nome]) palpitesPorNome[nome] = {};
+    palpitesPorNome[nome][p.game_id] = p;
+  }
+
+  // Calcula stats de todos
+  const statsAll = {};
+  for (const nome of Object.keys(palpitesPorNome)) {
+    let pts = 0, cravados = 0, acertos = 0, erros = 0, semPalpite = 0;
+    for (const gid of jogosFinalizados) {
+      const p = palpitesPorNome[nome]?.[gid];
+      if (!p) { semPalpite++; continue; }
+      const r = calcPoints(p, resultados[gid]);
+      if (r === 3) { pts += 3; cravados++; }
+      else if (r === 1) { pts += 1; acertos++; }
+      else erros++;
+    }
+    statsAll[nome] = { pts, cravados, acertos, erros, semPalpite, aprov: ptsPossiveis > 0 ? Math.round(pts / ptsPossiveis * 100) : 0 };
+  }
+
+  // Stats do usuário atual
+  const eu = statsAll[currentUser] || { pts: 0, cravados: 0, acertos: 0, erros: 0, semPalpite: totalFinalizados, aprov: 0 };
+
+  // Média e líder
+  const nomes = Object.keys(statsAll);
+  const media = (key) => nomes.length ? Math.round(nomes.reduce((s, n) => s + statsAll[n][key], 0) / nomes.length * 10) / 10 : 0;
+  const lider = nomes.sort((a, b) => statsAll[b].pts - statsAll[a].pts)[0];
+  const liderStats = lider ? statsAll[lider] : eu;
+
+  // Sequência atual e melhor
+  let sequenciaAtual = 0, melhorSequencia = 0, corrente = 0;
+  for (const gid of jogosFinalizados) {
+    const p = palpitesPorNome[currentUser]?.[gid];
+    if (!p) { corrente = 0; continue; }
+    const r = calcPoints(p, resultados[gid]);
+    if (r > 0) { corrente++; melhorSequencia = Math.max(melhorSequencia, corrente); }
+    else corrente = 0;
+  }
+  sequenciaAtual = corrente;
+
+  const pct = (n, total) => total > 0 ? Math.round(n / total * 100) : 0;
+  const totalPalpitados = eu.cravados + eu.acertos + eu.erros;
+
+  el.innerHTML = `
+    <div data-loaded="1">
+      <div class="stats-section-label">Visão geral</div>
+      <div class="stats-metric-grid">
+        <div class="stats-metric">
+          <div class="stats-metric-label">Aproveitamento</div>
+          <div class="stats-metric-value" style="color:var(--green);">${eu.aprov}%</div>
+          <div class="stats-metric-sub">${eu.pts} / ${ptsPossiveis} pts</div>
+        </div>
+        <div class="stats-metric">
+          <div class="stats-metric-label">Posição no ranking</div>
+          <div class="stats-metric-value" style="color:var(--gold-dark);">${nomes.indexOf(currentUser) + 1}°</div>
+          <div class="stats-metric-sub">de ${nomes.length} jogadores</div>
+        </div>
+        <div class="stats-metric">
+          <div class="stats-metric-label">Placares cravados 🎯</div>
+          <div class="stats-metric-value">${eu.cravados}</div>
+          <div class="stats-metric-sub">${pct(eu.cravados, totalPalpitados)}% dos palpites</div>
+        </div>
+        <div class="stats-metric">
+          <div class="stats-metric-label">Resultados certos ✅</div>
+          <div class="stats-metric-value">${eu.acertos}</div>
+          <div class="stats-metric-sub">${pct(eu.acertos, totalPalpitados)}% dos palpites</div>
+        </div>
+      </div>
+
+      <div class="stats-section-label">Distribuição</div>
+      <div class="stats-card">
+        <div class="stats-bar-row">
+          <div class="stats-bar-meta"><span>Placar exato 🎯</span><span>${eu.cravados} de ${totalFinalizados}</span></div>
+          <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${pct(eu.cravados, totalFinalizados)}%;background:var(--green);"></div></div>
+        </div>
+        <div class="stats-bar-row">
+          <div class="stats-bar-meta"><span>Resultado certo ✅</span><span>${eu.acertos} de ${totalFinalizados}</span></div>
+          <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${pct(eu.acertos, totalFinalizados)}%;background:var(--gold);"></div></div>
+        </div>
+        <div class="stats-bar-row">
+          <div class="stats-bar-meta"><span>Errou ❌</span><span>${eu.erros} de ${totalFinalizados}</span></div>
+          <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${pct(eu.erros, totalFinalizados)}%;background:#ef4444;"></div></div>
+        </div>
+        <div class="stats-bar-row" style="margin-bottom:0;">
+          <div class="stats-bar-meta"><span>Sem palpite</span><span>${eu.semPalpite} de ${totalFinalizados}</span></div>
+          <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${pct(eu.semPalpite, totalFinalizados)}%;background:var(--gray-200);"></div></div>
+        </div>
+      </div>
+
+      <div class="stats-section-label">Comparativo</div>
+      <div class="stats-card">
+        <div class="stats-compare-head">
+          <span>Métrica</span><span>Você</span><span>Líder (${lider}) / Média</span>
+        </div>
+        <div class="stats-compare-row">
+          <div class="cmp-label">Pontos</div>
+          <div class="cmp-you">${eu.pts}</div>
+          <div class="cmp-them"><strong>${liderStats.pts}</strong> / ${media('pts')}</div>
+        </div>
+        <div class="stats-compare-row">
+          <div class="cmp-label">Aproveitamento</div>
+          <div class="cmp-you">${eu.aprov}%</div>
+          <div class="cmp-them"><strong>${liderStats.aprov}%</strong> / ${media('aprov')}%</div>
+        </div>
+        <div class="stats-compare-row">
+          <div class="cmp-label">Placares cravados</div>
+          <div class="cmp-you">${eu.cravados}</div>
+          <div class="cmp-them"><strong>${liderStats.cravados}</strong> / ${media('cravados')}</div>
+        </div>
+        <div class="stats-compare-row">
+          <div class="cmp-label">Resultados certos</div>
+          <div class="cmp-you">${eu.acertos}</div>
+          <div class="cmp-them"><strong>${liderStats.acertos}</strong> / ${media('acertos')}</div>
+        </div>
+        <div class="stats-compare-row">
+          <div class="cmp-label">Taxa de acerto</div>
+          <div class="cmp-you">${pct(eu.cravados + eu.acertos, totalPalpitados)}%</div>
+          <div class="cmp-them"><strong>${pct(liderStats.cravados + liderStats.acertos, liderStats.cravados + liderStats.acertos + liderStats.erros)}%</strong> / ${Math.round(media('cravados') + media('acertos'))}pts avg</div>
+        </div>
+      </div>
+
+      <div class="stats-section-label">Sequências</div>
+      <div class="stats-card">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <div class="stats-metric-label">Sequência atual</div>
+            <div class="stats-metric-value" style="font-size:20px;">${sequenciaAtual} <span style="font-size:13px;font-weight:400;color:var(--gray-400);">acerto${sequenciaAtual !== 1 ? 's' : ''}</span></div>
+          </div>
+          <div>
+            <div class="stats-metric-label">Melhor sequência</div>
+            <div class="stats-metric-value" style="font-size:20px;">${melhorSequencia} <span style="font-size:13px;font-weight:400;color:var(--gray-400);">acerto${melhorSequencia !== 1 ? 's' : ''}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
 async function iniciarAutoRefresh() {
   if (_autoRefreshTimer) clearInterval(_autoRefreshTimer);
   _autoRefreshTimer = setInterval(async () => {
@@ -983,14 +1191,13 @@ function sair() {
   todayGames = [];
   yesterdayGames = [];
   document.getElementById('user-bar').style.display = 'none';
-  document.getElementById('games-section').style.display = 'none';
   document.getElementById('games-section').innerHTML = '';
-  document.getElementById('ranking-section').style.display = 'none';
-  document.getElementById('placares-section').style.display = 'none';
-  document.getElementById('historico-section').style.display = 'none';
+  document.getElementById('ranking-content').innerHTML = '';
+  document.getElementById('placares-content').innerHTML = '';
+  document.getElementById('historico-content').innerHTML = '';
+  document.getElementById('stats-content').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--gray-400);font-size:14px;">Carregando stats...</div>';
+  document.getElementById('tabs-container').style.display = 'none';
   if (_autoRefreshTimer) { clearInterval(_autoRefreshTimer); _autoRefreshTimer = null; }
-  document.getElementById('btn-historico') && (document.getElementById('btn-historico').textContent = '📋 Meu histórico');
-  document.getElementById('btn-historico') && document.getElementById('btn-historico').classList.remove('active');
   document.getElementById('rename-section').style.display = 'none';
   document.getElementById('name-section').style.display = 'block';
   const ni = document.getElementById('name-input');
