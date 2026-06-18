@@ -88,103 +88,28 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const TIMES_SERIE_A = [
-  { nome: 'Atlético Mineiro', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Atletico_mineiro_galo.png/240px-Atletico_mineiro_galo.png' },
-  { nome: 'Athletico Paranaense', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Athletico_Paranaense_logo.svg/240px-Athletico_Paranaense_logo.svg.png' },
-  { nome: 'Bahia', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Esporte_Clube_Bahia_logo.svg/240px-Esporte_Clube_Bahia_logo.svg.png' },
-  { nome: 'Botafogo', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Botafogo_de_Futebol_e_Regatas.svg/240px-Botafogo_de_Futebol_e_Regatas.svg.png' },
-  { nome: 'Ceará', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Ceará_SC_logo.svg/240px-Ceará_SC_logo.svg.png' },
-  { nome: 'Corinthians', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/SC_Corinthians_logo.svg/240px-SC_Corinthians_logo.svg.png' },
-  { nome: 'Cruzeiro', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Cruzeiro_logo.svg/240px-Cruzeiro_logo.svg.png' },
-  { nome: 'Flamengo', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Flamengo_escudo.svg/240px-Flamengo_escudo.svg.png' },
-  { nome: 'Fluminense', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Fluminense_FC_logo.svg/240px-Fluminense_FC_logo.svg.png' },
-  { nome: 'Fortaleza', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Fortaleza_EC_logo.svg/240px-Fortaleza_EC_logo.svg.png' },
-  { nome: 'Grêmio', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Grêmio_FBPA_logo.svg/240px-Grêmio_FBPA_logo.svg.png' },
-  { nome: 'Internacional', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Escudo_do_Sport_Club_Internacional.svg/240px-Escudo_do_Sport_Club_Internacional.svg.png' },
-  { nome: 'Juventude', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/EC_Juventude_logo.svg/240px-EC_Juventude_logo.svg.png' },
-  { nome: 'Mirassol', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Mirassol_Futebol_Clube_logo.svg/240px-Mirassol_Futebol_Clube_logo.svg.png' },
-  { nome: 'Palmeiras', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Palmeiras_logo.svg/240px-Palmeiras_logo.svg.png' },
-  { nome: 'RB Bragantino', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Red_Bull_Bragantino_logo.svg/240px-Red_Bull_Bragantino_logo.svg.png' },
-  { nome: 'Santos', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Santos_FC_logo.svg/240px-Santos_FC_logo.svg.png' },
-  { nome: 'São Paulo', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Escudo_do_São_Paulo_Futebol_Clube.svg/240px-Escudo_do_São_Paulo_Futebol_Clube.svg.png' },
-  { nome: 'Sport Recife', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Sport_Club_do_Recife_logo.svg/240px-Sport_Club_do_Recife_logo.svg.png' },
-  { nome: 'Vasco da Gama', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Vasco_da_Gama_Cruz_de_Malta.svg/240px-Vasco_da_Gama_Cruz_de_Malta.svg.png' },
-  { nome: 'Vitória', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Esporte_Clube_Vitória_logo.svg/240px-Esporte_Clube_Vitória_logo.svg.png' },
-];
-
-const nome = localStorage.getItem('bolao_kebolets_nome');
-let perfilAtual = {};
-let novaFoto = null;
-
-if (!nome) { window.location.href = 'index.html'; }
-
-function showToast(msg, type = '') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (type ? ' ' + type : '');
-  setTimeout(() => { t.className = 'toast'; }, 3000);
-}
-
-function setAvatar(url, nomeUser) {
-  const wrap = document.getElementById('avatar-wrap');
-  if (url) {
-    const existing = wrap.querySelector('img.avatar-img');
-    if (existing) { existing.src = url; return; }
-    const ph = document.getElementById('avatar-placeholder');
-    if (ph) ph.remove();
-    const img = document.createElement('img');
-    img.className = 'avatar-img';
-    img.src = url;
-    img.alt = nomeUser;
-    wrap.insertBefore(img, wrap.querySelector('.avatar-edit-btn'));
-  } else {
-    document.getElementById('avatar-placeholder').textContent = nomeUser.charAt(0);
-  }
-}
-
-function updateTeamPreview() {
-  const sel = document.getElementById('time-select');
-  const preview = document.getElementById('team-preview');
-  const time = TIMES_SERIE_A.find(t => t.nome === sel.value);
-  if (time) {
-    document.getElementById('team-logo').src = time.logo;
-    document.getElementById('team-name-preview').textContent = time.nome;
-    preview.style.display = 'flex';
-  } else {
-    preview.style.display = 'none';
-  }
-}
-
-async function init() {
-  document.getElementById('username-display').textContent = nome;
-  document.getElementById('avatar-placeholder').textContent = nome.charAt(0);
-
-  const sel = document.getElementById('time-select');
-  TIMES_SERIE_A.sort((a,b) => a.nome.localeCompare(b.nome)).forEach(t => {
-    const opt = document.createElement('option');
-    opt.value = t.nome;
-    opt.textContent = t.nome;
-    sel.appendChild(opt);
-  });
-
-  const { data } = await sb.from('perfis').select('*').eq('nome', nome).maybeSingle();
-  if (data) {
-    perfilAtual = data;
-    if (data.foto_url) setAvatar(data.foto_url, nome);
-    else setAvatar(null, nome);
-    if (data.time_coracao) {
-      sel.value = data.time_coracao;
-      updateTeamPreview();
-    }
-  } else {
-    setAvatar(null, nome);
-  }
-
-  document.getElementById('loading-perfil').style.display = 'none';
-  document.getElementById('perfil-content').style.display = 'block';
-}
-
-document.getElementById('file-input').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
+  { nome: 'Atlético Mineiro', logo: 'https://crests.football-data.org/1062.png' },
+  { nome: 'Athletico Paranaense', logo: 'https://crests.football-data.org/1025.png' },
+  { nome: 'Bahia', logo: 'https://crests.football-data.org/1828.png' },
+  { nome: 'Botafogo', logo: 'https://crests.football-data.org/1067.png' },
+  { nome: 'Ceará', logo: 'https://crests.football-data.org/4771.png' },
+  { nome: 'Corinthians', logo: 'https://crests.football-data.org/1768.png' },
+  { nome: 'Cruzeiro', logo: 'https://crests.football-data.org/140.png' },
+  { nome: 'Flamengo', logo: 'https://crests.football-data.org/133.png' },
+  { nome: 'Fluminense', logo: 'https://crests.football-data.org/134.png' },
+  { nome: 'Fortaleza', logo: 'https://crests.football-data.org/7465.png' },
+  { nome: 'Grêmio', logo: 'https://crests.football-data.org/135.png' },
+  { nome: 'Internacional', logo: 'https://crests.football-data.org/136.png' },
+  { nome: 'Juventude', logo: 'https://crests.football-data.org/7721.png' },
+  { nome: 'Mirassol', logo: 'https://crests.football-data.org/16565.png' },
+  { nome: 'Palmeiras', logo: 'https://crests.football-data.org/121.png' },
+  { nome: 'RB Bragantino', logo: 'https://crests.football-data.org/119.png' },
+  { nome: 'Santos', logo: 'https://crests.football-data.org/137.png' },
+  { nome: 'São Paulo', logo: 'https://crests.football-data.org/126.png' },
+  { nome: 'Sport Recife', logo: 'https://crests.football-data.org/139.png' },
+  { nome: 'Vasco da Gama', logo: 'https://crests.football-data.org/141.png' },
+  { nome: 'Vitória', logo: 'https://crests.football-data.org/7466.png' },
+]
   if (!file) return;
   novaFoto = file;
   const url = URL.createObjectURL(file);
