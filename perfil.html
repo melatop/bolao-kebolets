@@ -8,8 +8,7 @@
 <style>
   :root {
     --green: #1a7a3c; --green-dark: #125a2b; --green-light: #e8f5ed;
-    --gold: #f0b429; --gold-dark: #b8871a;
-    --white: #ffffff; --gray-50: #f9f9f7; --gray-100: #f0eeea;
+    --gold: #f0b429; --white: #ffffff; --gray-50: #f9f9f7; --gray-100: #f0eeea;
     --gray-200: #dddbd5; --gray-400: #9b9891; --gray-700: #3d3c38; --gray-900: #1a1917;
     --radius: 12px; --radius-sm: 8px;
   }
@@ -27,13 +26,15 @@
   .avatar-edit-btn { position: absolute; bottom: 2px; right: 2px; width: 28px; height: 28px; border-radius: 50%; background: var(--green); border: 2px solid var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; }
   .username { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; color: var(--gray-900); }
   .username-hint { font-size: 12px; color: var(--gray-400); }
-  label { display: block; font-size: 13px; font-weight: 600; color: var(--gray-700); margin-bottom: 6px; margin-top: 1rem; }
-  label:first-of-type { margin-top: 0; }
-  select { width: 100%; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); padding: 11px 13px; font-size: 15px; font-family: inherit; color: var(--gray-900); background: var(--gray-50); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239b9891' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; }
-  select:focus { outline: none; border-color: var(--green); }
-  .team-preview { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--gray-50); border-radius: var(--radius-sm); margin-top: 8px; min-height: 48px; }
-  .team-preview img { width: 32px; height: 32px; object-fit: contain; }
-  .team-preview span { font-size: 14px; font-weight: 600; color: var(--gray-700); }
+  .field-label { display: block; font-size: 13px; font-weight: 600; color: var(--gray-700); margin-bottom: 8px; }
+  .time-list { border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); overflow: hidden; max-height: 280px; overflow-y: auto; }
+  .time-item { display: flex; align-items: center; gap: 10px; padding: 10px 13px; cursor: pointer; border-bottom: 1px solid var(--gray-100); transition: background 0.1s; }
+  .time-item:last-child { border-bottom: none; }
+  .time-item:hover { background: var(--gray-50); }
+  .time-item.selected { background: var(--green-light); }
+  .time-item.selected .time-nome { color: var(--green); }
+  .time-logo { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+  .time-nome { font-size: 14px; font-weight: 600; color: var(--gray-700); }
   button[type="submit"] { width: 100%; margin-top: 1.5rem; background: var(--green); color: white; border: none; border-radius: var(--radius-sm); padding: 13px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
   button[type="submit"]:disabled { background: var(--gray-200); color: var(--gray-400); cursor: not-allowed; }
   #file-input { display: none; }
@@ -43,9 +44,7 @@
 </style>
 </head>
 <body>
-<header>
-  <h1>👤 Meu Perfil</h1>
-</header>
+<header><h1>👤 Meu Perfil</h1></header>
 <main>
   <a href="index.html" class="back-link">← Voltar ao bolão</a>
   <div id="loading-perfil" style="text-align:center;padding:2rem;color:var(--gray-400);">Carregando...</div>
@@ -66,14 +65,9 @@
 
     <div class="card">
       <form id="perfil-form">
-        <label for="time-select">⚽ Time do coração</label>
-        <select id="time-select" onchange="updateTeamPreview()">
-          <option value="">Selecione seu time</option>
-        </select>
-        <div class="team-preview" id="team-preview" style="display:none;">
-          <img id="team-logo" src="" alt="">
-          <span id="team-name-preview"></span>
-        </div>
+        <span class="field-label">⚽ Time do coração</span>
+        <div class="time-list" id="time-list"></div>
+        <input type="hidden" id="time-selected" value="">
         <button type="submit" id="save-btn">Salvar perfil</button>
       </form>
     </div>
@@ -87,7 +81,7 @@ const SUPABASE_URL = 'https://yciqdafnvcxrxgkwltxy.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljaXFkYWZudmN4cnhna3dsdHh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODI4MjIsImV4cCI6MjA5Njc1ODgyMn0.cZtvIIuPYMteHrqHjRlzLw9dU8bUeVr4LCOVvhVTxqw';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const TIMES_SERIE_A = [
+const TIMES = [
   { nome: 'Atlético Mineiro', logo: 'https://crests.football-data.org/1062.png' },
   { nome: 'Athletico Paranaense', logo: 'https://crests.football-data.org/1025.png' },
   { nome: 'Bahia', logo: 'https://crests.football-data.org/1828.png' },
@@ -109,11 +103,80 @@ const TIMES_SERIE_A = [
   { nome: 'Sport Recife', logo: 'https://crests.football-data.org/139.png' },
   { nome: 'Vasco da Gama', logo: 'https://crests.football-data.org/141.png' },
   { nome: 'Vitória', logo: 'https://crests.football-data.org/7466.png' },
-]
+].sort((a, b) => a.nome.localeCompare(b.nome));
+
+const nome = localStorage.getItem('bolao_kebolets_nome');
+let perfilAtual = {};
+let novaFoto = null;
+
+if (!nome) window.location.href = 'index.html';
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+function setAvatar(url) {
+  const wrap = document.getElementById('avatar-wrap');
+  const existing = wrap.querySelector('img.avatar-img');
+  if (url) {
+    if (existing) { existing.src = url; return; }
+    const ph = document.getElementById('avatar-placeholder');
+    if (ph) ph.remove();
+    const img = document.createElement('img');
+    img.className = 'avatar-img';
+    img.src = url;
+    wrap.insertBefore(img, wrap.querySelector('.avatar-edit-btn'));
+  } else {
+    document.getElementById('avatar-placeholder').textContent = nome.charAt(0);
+  }
+}
+
+function buildTimeList(selectedTime) {
+  const list = document.getElementById('time-list');
+  list.innerHTML = '';
+  TIMES.forEach(t => {
+    const item = document.createElement('div');
+    item.className = 'time-item' + (t.nome === selectedTime ? ' selected' : '');
+    item.innerHTML = `<img class="time-logo" src="${t.logo}" alt="${t.nome}" onerror="this.style.opacity='0'"><span class="time-nome">${t.nome}</span>`;
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.time-item').forEach(el => el.classList.remove('selected'));
+      item.classList.add('selected');
+      document.getElementById('time-selected').value = t.nome;
+    });
+    list.appendChild(item);
+  });
+  if (selectedTime) {
+    const sel = list.querySelector('.selected');
+    if (sel) sel.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+async function init() {
+  document.getElementById('username-display').textContent = nome;
+
+  const { data } = await sb.from('perfis').select('*').eq('nome', nome).maybeSingle();
+  if (data) {
+    perfilAtual = data;
+    setAvatar(data.foto_url || null);
+    document.getElementById('time-selected').value = data.time_coracao || '';
+    buildTimeList(data.time_coracao || '');
+  } else {
+    setAvatar(null);
+    buildTimeList('');
+  }
+
+  document.getElementById('loading-perfil').style.display = 'none';
+  document.getElementById('perfil-content').style.display = 'block';
+}
+
+document.getElementById('file-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
   if (!file) return;
   novaFoto = file;
-  const url = URL.createObjectURL(file);
-  setAvatar(url, nome);
+  setAvatar(URL.createObjectURL(file));
 });
 
 document.getElementById('perfil-form').addEventListener('submit', async (e) => {
@@ -121,10 +184,8 @@ document.getElementById('perfil-form').addEventListener('submit', async (e) => {
   const btn = document.getElementById('save-btn');
   btn.disabled = true;
   btn.textContent = 'Salvando...';
-
   try {
     let foto_url = perfilAtual.foto_url || null;
-
     if (novaFoto) {
       const ext = novaFoto.name.split('.').pop() || 'jpg';
       const path = `${nome.toLowerCase()}.${ext}`;
@@ -133,13 +194,8 @@ document.getElementById('perfil-form').addEventListener('submit', async (e) => {
       const { data: urlData } = sb.storage.from('fotos-perfil').getPublicUrl(path);
       foto_url = urlData.publicUrl + '?t=' + Date.now();
     }
-
-    const time_coracao = document.getElementById('time-select').value || null;
-
-    const { error } = await sb.from('perfis').upsert({
-      nome, time_coracao, foto_url, atualizado_em: new Date().toISOString()
-    }, { onConflict: 'nome' });
-
+    const time_coracao = document.getElementById('time-selected').value || null;
+    const { error } = await sb.from('perfis').upsert({ nome, time_coracao, foto_url, atualizado_em: new Date().toISOString() }, { onConflict: 'nome' });
     if (error) throw error;
     perfilAtual = { nome, time_coracao, foto_url };
     novaFoto = null;
