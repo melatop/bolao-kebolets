@@ -183,7 +183,9 @@
     </div>
   </div>
   <div id="user-bar" style="display:none;">
+    <div id="user-avatar" style="width:34px;height:34px;border-radius:50%;background:var(--green);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'Barlow Condensed',sans-serif;flex-shrink:0;overflow:hidden;"></div>
     <span class="uname" id="user-display"></span>
+    <a href="perfil.html" style="font-size:12px;color:var(--gray-400);text-decoration:none;font-weight:600;">ver perfil</a>
     <button class="btn-sair" onclick="sair()">Sair</button>
   </div>
   <div id="loading-games" style="display:none;">Carregando jogos...</div>
@@ -354,6 +356,22 @@ async function fetchTodosPalpites() {
     }
   }
 }
+async function fetchPerfis() {
+  try {
+    const { data } = await sb.from('perfis').select('nome, foto_url, time_coracao');
+    const map = {};
+    if (data) data.forEach(p => { map[p.nome.toUpperCase()] = p; });
+    return map;
+  } catch(e) { return {}; }
+}
+
+function renderAvatar(nomeUser, fotoUrl, size = 34) {
+  if (fotoUrl) {
+    return `<img src="${fotoUrl}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;display:block;" alt="${nomeUser}">`;
+  }
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:var(--green);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.38)}px;font-weight:700;font-family:'Barlow Condensed',sans-serif;flex-shrink:0;">${nomeUser.charAt(0)}</div>`;
+}
+
 async function fetchResultados() {
   try {
     const { data } = await sb.from('resultados').select('*');
@@ -623,15 +641,22 @@ async function renderRanking() {
         <div style="font-size:10px;color:var(--gray-400);font-weight:600;letter-spacing:0.04em;text-transform:uppercase;width:90px;flex-shrink:0;text-align:right;">Forma</div>
       </div>`;
 
+  const perfis = window._perfisCache || await fetchPerfis();
+
   ranking.forEach((r, i) => {
     const isMe = r.nome.toUpperCase() === currentUser;
     const rowClass = isMe ? 'ranking-row me' : i === 0 ? 'ranking-row top1' : 'ranking-row';
     const forma = calcForma(r.nome);
     const formaDots = forma.map(f => `<span class="forma-dot f${f}"></span>`).join('');
+    const perfil = perfis[r.nome] || {};
+    const avatar = renderAvatar(r.nome, perfil.foto_url || null, 30);
     html += `
       <div class="${rowClass}">
         <div class="pos" style="width:28px;flex-shrink:0;">${posIcons[i] || (i + 1)}</div>
-        <div class="rk-name${isMe ? ' me-label' : ''}" style="flex:1;min-width:80px;">${r.nome.toUpperCase()}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:80px;overflow:hidden;">
+          <div style="flex-shrink:0;">${avatar}</div>
+          <div class="rk-name${isMe ? ' me-label' : ''}" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.nome.toUpperCase()}</div>
+        </div>
         <div class="rk-col" style="width:44px;flex-shrink:0;"><span class="rk-pts">${r.pts}</span></div>
         <div class="rk-col" style="width:32px;flex-shrink:0;color:var(--gray-700);font-weight:600;">${r.acertos}</div>
         <div class="rk-col" style="width:32px;flex-shrink:0;color:var(--gray-700);font-weight:600;">${r.cravados}</div>
@@ -955,6 +980,13 @@ async function enterWithName() {
   document.getElementById('user-bar').style.display = 'flex';
   document.getElementById('loading-games').style.display = 'none';
   document.getElementById('tabs-container').style.display = 'block';
+
+  // Carrega perfil e atualiza avatar no user-bar
+  const perfis = await fetchPerfis();
+  window._perfisCache = perfis;
+  const meuPerfil = perfis[nome] || {};
+  const avatarEl = document.getElementById('user-avatar');
+  avatarEl.innerHTML = renderAvatar(nome, meuPerfil.foto_url || null, 34);
   // Pré-carrega resultados para uso em renderGames
   try { window._resultadosCache = await Promise.race([fetchResultados(), timeout(5000)]); } catch(e) { window._resultadosCache = {}; }
   renderGames();
