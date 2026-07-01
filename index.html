@@ -75,7 +75,8 @@
   .preview-score { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; color: var(--gray-900); }
   .placares-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); overflow: hidden; margin-top: 10px; }
   .placar-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--gray-100); }
-  .placar-row:last-child { border-bottom: none; }
+  .placar-row-clicavel { cursor: pointer; }
+  .placar-row-clicavel:hover { background: var(--gray-50); }
   .placar-team { font-size: 13px; font-weight: 600; color: var(--gray-700); display: flex; align-items: center; gap: 6px; }
   .placar-team.away { flex-direction: row-reverse; text-align: right; }
   .placar-flag { width: 20px; height: 20px; display: block; flex-shrink: 0; }
@@ -796,27 +797,72 @@ async function togglePlacares() {
   }
 }
 
-function placarRowHtml(g, resultados) {
+function placarRowHtml(g, resultados, todosPalpites) {
   const res = resultados[g.id];
   const locked = isLocked(g);
   const aoVivo = locked && res && !res.finalizado;
+  const finalizado = res && res.finalizado;
   let scoreHtml = '';
   if (res) {
     scoreHtml = `<div class="placar-score" style="${aoVivo ? 'color:#dc2626;' : ''}">${res.home_score} <span style="color:var(--gray-400);font-size:14px;">×</span> ${res.away_score}</div>`;
   } else {
-    // locked mas sem resultado na API — mostra horário normal
     scoreHtml = `<div class="placar-score pending">${formatKickoffBRT(g.kickoff_brt || g.kickoff_utc)}</div>`;
   }
+
+  if (!finalizado || !todosPalpites) {
+    return `
+      <div class="placar-row">
+        <div class="placar-team"><span class="placar-flag">${g.home_flag}</span>${g.home_name}</div>
+        ${scoreHtml}
+        <div class="placar-team away"><span class="placar-flag">${g.away_flag}</span>${g.away_name}</div>
+      </div>`;
+  }
+
+  // Jogo finalizado — clicável para expandir palpites
+  const palpitesJogo = (todosPalpites[g.id] || []).sort((a, b) => {
+    const pa = calcPoints(a, res) ?? -1;
+    const pb = calcPoints(b, res) ?? -1;
+    return pb - pa;
+  });
+
+  const palpitesHtml = palpitesJogo.length ? palpitesJogo.map(p => {
+    const pts = calcPoints(p, res);
+    const ptsColor = pts === 3 ? 'var(--green)' : pts === 1 ? 'var(--gold-dark)' : '#ef4444';
+    const ptsLabel = pts === 3 ? '+3' : pts === 1 ? '+1' : '0';
+    const isMe = p.nome.toUpperCase() === currentUser;
+    return `<div class="preview-row">
+      <span class="preview-nome${isMe ? ' me' : ''}">${isMe ? '→ ' : ''}${p.nome.toUpperCase()}</span>
+      <span class="preview-score">${p.home_score} × ${p.away_score} <span style="color:${ptsColor};font-weight:700;margin-left:4px;">${ptsLabel}</span></span>
+    </div>`;
+  }).join('') : '<div style="font-size:13px;color:var(--gray-400);padding:8px 0;">Nenhum palpite registrado.</div>';
+
+  const uid = g.id.replace(/-/g, '_');
   return `
-    <div class="placar-row">
+    <div class="placar-row placar-row-clicavel" onclick="togglePlacarDetail('${uid}')">
       <div class="placar-team"><span class="placar-flag">${g.home_flag}</span>${g.home_name}</div>
       ${scoreHtml}
       <div class="placar-team away"><span class="placar-flag">${g.away_flag}</span>${g.away_name}</div>
+      <span style="font-size:11px;color:var(--gray-400);margin-left:6px;" id="arrow_${uid}">▼</span>
+    </div>
+    <div id="detail_${uid}" style="display:none;padding:8px 12px 12px;border-top:1px solid var(--gray-100);">
+      <div class="preview-section" style="margin-top:0;">
+        <div class="preview-title">Palpites</div>
+        ${palpitesHtml}
+      </div>
     </div>`;
 }
 
+function togglePlacarDetail(uid) {
+  const detail = document.getElementById(`detail_${uid}`);
+  const arrow = document.getElementById(`arrow_${uid}`);
+  if (!detail) return;
+  const open = detail.style.display !== 'none';
+  detail.style.display = open ? 'none' : 'block';
+  if (arrow) arrow.textContent = open ? '▼' : '▲';
+}
+
 async function renderPlacares() {
-  const resultados = await fetchResultados();
+  const [resultados] = await Promise.all([fetchResultados()]);
   const contentEl = document.getElementById('placares-content');
 
   const brtNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
@@ -827,16 +873,29 @@ async function renderPlacares() {
     return kickStr.replace('T', ' ').substring(0, 10) === todayBRT;
   });
 
-  // Jogos de hoje: abertos, em andamento e finalizados
-  const abertos = todosHoje.filter(g => !isLocked(g));
-  const encerrados = todosHoje.filter(g => isLocked(g));
+  // Busca palpites para jogos finalizados (hoje + ontem)
+  const jogosParaBuscar = [...todosHoje, ...yesterdayGames].filter(g => resultados[g.id]?.finalizado).map(g => g.id);
+  let palpitesMap = {};
+  if (jogosParaBuscar.length) {
+    const { data: pData } = await sb.from('palpites').select('*').in('game_id', jogosParaBuscar);
+    if (pData) {
+      pData.forEach(p => {
+        const nome = p.nome.toUpperCase().trim();
+        if (!palpitesMap[p.game_id]) palpitesMap[p.game_id] = [];
+        // Dedup por nome
+        if (!palpitesMap[p.game_id].find(x => x.nome === nome)) {
+          palpitesMap[p.game_id].push({ ...p, nome });
+        }
+      });
+    }
+  }
 
   let html = '';
 
   if (todosHoje.length) {
     html += `<div class="ranking-header" style="margin-top:1.25rem;"><span class="ranking-title">📊 Jogos do dia</span></div><div class="placares-card">`;
     for (const g of todosHoje) {
-      html += placarRowHtml(g, resultados);
+      html += placarRowHtml(g, resultados, palpitesMap);
     }
     html += `</div>`;
   }
@@ -847,7 +906,7 @@ async function renderPlacares() {
     const ontemLabel = ontem.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', timeZone: 'America/Sao_Paulo' });
     html += `<div class="ranking-header" style="margin-top:1.25rem;"><span class="ranking-title" style="font-size:14px;color:var(--gray-400);">Últimos jogos — ${ontemLabel}</span></div><div class="placares-card">`;
     for (const g of yesterdayGames) {
-      html += placarRowHtml(g, resultados);
+      html += placarRowHtml(g, resultados, palpitesMap);
     }
     html += `</div>`;
   }
