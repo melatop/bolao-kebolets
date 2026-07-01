@@ -838,16 +838,18 @@ function placarRowHtml(g, resultados, todosPalpites) {
 
   const uid = g.id.replace(/-/g, '_');
   return `
-    <div class="placar-row placar-row-clicavel" onclick="togglePlacarDetail('${uid}')">
-      <div class="placar-team"><span class="placar-flag">${g.home_flag}</span>${g.home_name}</div>
-      ${scoreHtml}
-      <div class="placar-team away"><span class="placar-flag">${g.away_flag}</span>${g.away_name}</div>
-      <span style="font-size:11px;color:var(--gray-400);margin-left:6px;" id="arrow_${uid}">▼</span>
-    </div>
-    <div id="detail_${uid}" style="display:none;padding:8px 12px 12px;border-top:1px solid var(--gray-100);">
-      <div class="preview-section" style="margin-top:0;">
-        <div class="preview-title">Palpites</div>
-        ${palpitesHtml}
+    <div style="border-bottom:1px solid var(--gray-100);">
+      <div class="placar-row" style="cursor:pointer;border-bottom:none;" onclick="togglePlacarDetail('${uid}')">
+        <div class="placar-team"><span class="placar-flag">${g.home_flag}</span>${g.home_name}</div>
+        ${scoreHtml}
+        <div class="placar-team away"><span class="placar-flag">${g.away_flag}</span>${g.away_name}</div>
+        <span style="font-size:13px;color:var(--gray-400);margin-left:8px;flex-shrink:0;transition:transform 0.2s;" id="arrow_${uid}">›</span>
+      </div>
+      <div id="detail_${uid}" style="display:none;padding:0 12px 12px;">
+        <div class="preview-section" style="margin-top:0;padding-top:8px;border-top:1px solid var(--gray-100);">
+          <div class="preview-title">Palpites</div>
+          ${palpitesHtml}
+        </div>
       </div>
     </div>`;
 }
@@ -858,7 +860,7 @@ function togglePlacarDetail(uid) {
   if (!detail) return;
   const open = detail.style.display !== 'none';
   detail.style.display = open ? 'none' : 'block';
-  if (arrow) arrow.textContent = open ? '▼' : '▲';
+  if (arrow) arrow.style.transform = open ? '' : 'rotate(90deg)';
 }
 
 async function renderPlacares() {
